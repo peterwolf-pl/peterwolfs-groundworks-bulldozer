@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "id": "pw_groundworks_bulldozer_test",
+  "version": "1.0.0",
+  "name": "Bulldozer Client Game Tests",
+  "environment": "client",
+  "entrypoints": {
+    "fabric-client-gametest": [
+      "com.piotrek.groundworksbulldozer.gametest.BulldozerVisualGameTest"
+    ]
+  },
+  "depends": {
+    "fabric-client-gametest-api-v1": "*"
+  }
+}

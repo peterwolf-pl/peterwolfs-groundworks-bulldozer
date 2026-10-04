@@ -1,0 +1,9 @@
+{
+  "item.pw_groundworks_bulldozer.bulldozer": "Spycharka Groundworks",
+  "entity.pw_groundworks_bulldozer.bulldozer": "Spycharka Groundworks",
+  "key.categories.pw_groundworks_bulldozer": "Spycharka Groundworks",
+  "key.pw_groundworks_bulldozer.blade_up": "Podnoszenie lemiesza (Strzałka w górę)",
+  "key.pw_groundworks_bulldozer.blade_down": "Opuszczanie lemiesza (Strzałka w dół)",
+  "key.pw_groundworks_bulldozer.blade_tilt_left": "Przechył lemiesza w lewo (Strzałka w lewo)",
+  "key.pw_groundworks_bulldozer.blade_tilt_right": "Przechył lemiesza w prawo (Strzałka w prawo)"
+}

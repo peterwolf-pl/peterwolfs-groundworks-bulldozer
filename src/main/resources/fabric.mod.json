@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "id": "pw_groundworks_bulldozer",
+  "version": "${version}",
+  "name": "Peterwolf's Groundworks Bulldozer",
+  "description": "Heavy tracked bulldozer designed to grade, level, push and shape granular terrain for Peterwolf's Groundworks.",
+  "authors": [
+    "Piotrek"
+  ],
+  "contact": {
+    "homepage": "https://github.com/piotrek/peterwolfs-groundworks-bulldozer"
+  },
+  "license": "MIT",
+  "icon": "assets/pw_groundworks_bulldozer/textures/item/bulldozer.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.piotrek.groundworksbulldozer.GroundworksBulldozerMod"
+    ],
+    "client": [
+      "com.piotrek.groundworksbulldozer.client.GroundworksBulldozerClient"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.19.5",
+    "minecraft": "~26.3",
+    "java": ">=25",
+    "fabric-api": "*",
+    "pw_groundworks": ">=0.1.0"
+  },
+  "suggests": {
+    "pw_groundworks_excavator": "*"
+  }
+}

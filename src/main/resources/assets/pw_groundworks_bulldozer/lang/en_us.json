@@ -1,0 +1,9 @@
+{
+  "item.pw_groundworks_bulldozer.bulldozer": "Groundworks Bulldozer",
+  "entity.pw_groundworks_bulldozer.bulldozer": "Groundworks Bulldozer",
+  "key.categories.pw_groundworks_bulldozer": "Groundworks Bulldozer",
+  "key.pw_groundworks_bulldozer.blade_up": "Raise Blade (Arrow Up)",
+  "key.pw_groundworks_bulldozer.blade_down": "Lower Blade (Arrow Down)",
+  "key.pw_groundworks_bulldozer.blade_tilt_left": "Tilt Blade Left (Arrow Left)",
+  "key.pw_groundworks_bulldozer.blade_tilt_right": "Tilt Blade Right (Arrow Right)"
+}
