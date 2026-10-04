@@ -50,7 +50,7 @@ public class BulldozerRenderer extends EntityRenderer<GroundworksBulldozerEntity
 
         state.carriedMaterialId = entity.getCarriedMaterialId();
         state.carriedUnits = entity.getCarriedUnits();
-        state.fillRatio = (float) entity.getCarriedUnits() / 768.0F;
+        state.fillRatio = (float) entity.getCarriedUnits() / (float) com.piotrek.groundworksbulldozer.blade.BulldozerBladeController.MAX_BLADE_CAPACITY;
 
         state.isPushing = entity.isPushing();
         state.isEngineRunning = entity.isEngineRunning();

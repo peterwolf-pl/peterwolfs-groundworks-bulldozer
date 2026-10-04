@@ -27,7 +27,7 @@ import java.util.Set;
  */
 public final class BulldozerBladeController {
 
-    public static final int MAX_BLADE_CAPACITY = 768; // 1.5 full blocks of granular material
+    public static final int MAX_BLADE_CAPACITY = 1536; // 3.0 full blocks of granular material (3.0 m³ - 2x capacity)
     public static final double MIN_MOVE_SPEED = 0.005D;
     public static final double MAX_VALID_MOVE = 2.0D;
     public static final int SWEEP_SUBDIVISIONS = 3;
@@ -137,7 +137,7 @@ public final class BulldozerBladeController {
                             GranularCell cell = terrain.getOrConvert(targetPos);
                             int cellMatId = (cell != null && !cell.isEmpty()) ? cell.materialId() : 0;
 
-                            int toRemove = Math.min(room, 64);
+                            int toRemove = Math.min(room, 128);
                             int removed = terrain.excavateMicrovoxelsAbove(targetPos, pt.y, toRemove);
                             if (removed > 0) {
                                 totalExcavated += removed;
@@ -163,7 +163,7 @@ public final class BulldozerBladeController {
         // Keep that load intact until the blade is physically full; only then can it escape
         // around the two wings.
         if (currentUnits >= MAX_BLADE_CAPACITY && currentMaterial != GranularMaterial.EMPTY) {
-            int spillPerSide = 24;
+            int spillPerSide = 48;
 
             // Left wing spill
             Vec3 leftSpillPt = currTransform.leftWingPoint().subtract(currTransform.right().scale(0.5D));

@@ -124,4 +124,26 @@ class BladeDownRemovesAndPushesMaterialTest {
             assertEquals(mat.id(), res.carriedMaterialAfter().id(), "Carried material must match " + mat.name());
         }
     }
+
+    @Test
+    @DisplayName("Doubled blade capacity (1536 units / 3.0 m³) holds 2x material before spill")
+    void testDoubledBladeCapacity() {
+        assertEquals(1536, BulldozerBladeController.MAX_BLADE_CAPACITY,
+                "Max blade capacity must be doubled to 1536 units (3.0 m³)");
+
+        TestGranularTerrain terrain = new TestGranularTerrain();
+        // Create large multi-block soil ridge in front of blade
+        for (int x = -1; x <= 1; x++) {
+            terrain.createFullCell(new BlockPos(x, 65, 2), GranularMaterialRegistry.DIRT);
+        }
+
+        BladeTransform b0 = BladeTransform.compute(new Vec3(0, 65, 0), 0, 0, 0, -0.30F, -2.0F);
+        BladeTransform b1 = BladeTransform.compute(new Vec3(0, 65, 0.5), 0, 0, 0, -0.30F, -2.0F);
+
+        BladeTickResult res = BulldozerBladeController.tick(terrain, b0, b1, 0, GranularMaterial.EMPTY);
+
+        // Throughput must exceed old single-tick 64-limit per contact
+        assertTrue(res.unitsExcavated() > 100, "Bulldozer must intake high-volume material (>100 units/step)");
+        assertTrue(res.carriedUnitsAfter() > 100);
+    }
 }

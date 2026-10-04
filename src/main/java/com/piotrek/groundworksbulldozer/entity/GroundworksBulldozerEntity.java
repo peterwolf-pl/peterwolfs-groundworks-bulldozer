@@ -192,7 +192,7 @@ public class GroundworksBulldozerEntity extends Entity {
         bladeAngle = bladeHeight * 12.0F + (inputBladeTilt * 8.0F);
 
         // 3. Track kinematics and differential steering
-        boolean heavyLoad = carriedUnits > 384;
+        boolean heavyLoad = carriedUnits > (BulldozerBladeController.MAX_BLADE_CAPACITY / 2);
         BulldozerTrackController.TrackState trackState = trackController.tick(
                 serverLevel,
                 this.position(),

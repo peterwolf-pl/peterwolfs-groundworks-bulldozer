@@ -66,7 +66,7 @@ public class BulldozerHudOverlay implements HudElement {
                 ? dozer.getCarriedMaterial().name().toUpperCase()
                 : "BRAK";
         int units = dozer.getCarriedUnits();
-        int cap = 768;
+        int cap = com.piotrek.groundworksbulldozer.blade.BulldozerBladeController.MAX_BLADE_CAPACITY;
         double m3 = (double) units / 512.0D;
         extractor.text(font, String.format("Urobek w lemieszu: §f%s §7(%d/%d u = %.3f m³)", matName, units, cap, m3), x, y + 22, 0xCCCCCC, true);
 
