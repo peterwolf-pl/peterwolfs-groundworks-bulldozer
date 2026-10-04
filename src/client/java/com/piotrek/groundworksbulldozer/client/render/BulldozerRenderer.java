@@ -38,7 +38,7 @@ public class BulldozerRenderer extends EntityRenderer<GroundworksBulldozerEntity
     public void extractRenderState(GroundworksBulldozerEntity entity, BulldozerRenderState state, float partialTick) {
         super.extractRenderState(entity, state, partialTick);
 
-        state.baseYaw = entity.getYRot();
+        state.baseYaw = entity.getYRot(partialTick);
         state.basePitch = entity.getVehiclePitch();
         state.baseRoll = entity.getVehicleRoll();
 

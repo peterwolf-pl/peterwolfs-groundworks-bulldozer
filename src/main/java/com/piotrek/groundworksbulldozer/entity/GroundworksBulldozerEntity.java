@@ -155,21 +155,30 @@ public class GroundworksBulldozerEntity extends Entity {
         Entity driver = this.getControllingPassenger();
         if (driver instanceof ServerPlayer player) {
             var vanillaInput = player.getLastClientInput();
-            if (this.inputFreshTicks <= 0 || Math.abs(this.inputThrottle) < 0.01F) {
+            if (this.inputFreshTicks > 0) {
+                this.inputFreshTicks--;
+            } else {
+                this.inputThrottle = vanillaInput.forward() ? 1.0F : vanillaInput.backward() ? -1.0F : 0.0F;
+                this.inputSteer = vanillaInput.left() ? -1.0F : vanillaInput.right() ? 1.0F : 0.0F;
+                this.inputBladeLift = 0.0F;
+                this.inputBladeTilt = 0.0F;
+            }
+
+            // Always allow vanilla forward/backward override if packet throttle is 0
+            if (Math.abs(this.inputThrottle) < 0.01F) {
                 if (vanillaInput.forward()) this.inputThrottle = 1.0F;
                 else if (vanillaInput.backward()) this.inputThrottle = -1.0F;
             }
-            if (this.inputFreshTicks <= 0 || Math.abs(this.inputSteer) < 0.01F) {
+            if (Math.abs(this.inputSteer) < 0.01F) {
                 if (vanillaInput.left()) this.inputSteer = -1.0F;
                 else if (vanillaInput.right()) this.inputSteer = 1.0F;
             }
-        }
-
-        if (this.inputFreshTicks > 0) {
-            this.inputFreshTicks--;
         } else {
+            this.inputThrottle = 0.0F;
+            this.inputSteer = 0.0F;
             this.inputBladeLift = 0.0F;
             this.inputBladeTilt = 0.0F;
+            this.inputFreshTicks = 0;
         }
 
         boolean hasDriver = driver != null;
@@ -201,6 +210,11 @@ public class GroundworksBulldozerEntity extends Entity {
             this.setYBodyRot(this.getYRot());
         }
 
+        this.entityData.set(TRACK_LEFT_SPEED, trackState.leftSpeed());
+        this.entityData.set(TRACK_RIGHT_SPEED, trackState.rightSpeed());
+        this.entityData.set(VEHICLE_PITCH, trackState.pitch());
+        this.entityData.set(VEHICLE_ROLL, trackState.roll());
+
         // Apply forward translation and gravity
         Vec3 motion = trackState.forwardDelta();
         if (!this.onGround()) {
@@ -212,9 +226,10 @@ public class GroundworksBulldozerEntity extends Entity {
         this.move(MoverType.SELF, motion);
 
         // Force position synchronization to passengers and tracking clients while driving
-        if (Math.abs(trackState.leftSpeed()) > 0.001F || Math.abs(trackState.rightSpeed()) > 0.001F || Math.abs(trackState.yawDeltaDegrees()) > 0.01F) {
+        if (hasDriver || Math.abs(trackState.leftSpeed()) > 0.001F || Math.abs(trackState.rightSpeed()) > 0.001F || Math.abs(trackState.yawDeltaDegrees()) > 0.01F) {
             this.syncPosition = true;
             this.needsSync = true;
+            this.syncVelocity = true;
         }
 
         // 4. Update Blade Transforms (Previous & Current)
@@ -294,6 +309,16 @@ public class GroundworksBulldozerEntity extends Entity {
 
     @Override
     public boolean canCollideWith(Entity other) {
+        return false;
+    }
+
+    @Override
+    public boolean isClientAuthoritative() {
+        return false;
+    }
+
+    @Override
+    protected boolean isLocalClientAuthoritative() {
         return false;
     }
 

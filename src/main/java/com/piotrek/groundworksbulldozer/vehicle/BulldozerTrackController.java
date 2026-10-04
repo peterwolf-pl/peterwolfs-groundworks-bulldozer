@@ -17,9 +17,9 @@ import net.minecraft.world.phys.Vec3;
  */
 public class BulldozerTrackController {
 
-    public static final double MAX_SPEED = 0.11D;
-    public static final double ACCELERATION = 0.028D;
-    public static final double BRAKING = 0.055D;
+    public static final double MAX_SPEED = 0.13D;
+    public static final double ACCELERATION = 0.045D;
+    public static final double BRAKING = 0.075D;
     public static final double TRACK_GAUGE = 2.2D;
     public static final double TRACK_LENGTH = 3.4D;
 
