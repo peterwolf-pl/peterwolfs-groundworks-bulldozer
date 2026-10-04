@@ -263,7 +263,7 @@ public class GroundworksBulldozerEntity extends Entity {
         this.lastDepositedUnits = bladeResult.unitsDeposited();
 
         // Spawn visual dust/shaving particles & scraping audio when actively pushing terrain
-        if (bladeResult.isPushing() || bladeResult.unitsExcavated() > 0 || bladeResult.unitsDeposited() > 0) {
+        if (bladeResult.isPushing() || bladeResult.unitsExcavated() > 0) {
             spawnWorkingParticles(serverLevel, currentBladeTransform, this.carriedMaterial);
 
             if (this.tickCount % 4 == 0) {
@@ -272,6 +272,12 @@ public class GroundworksBulldozerEntity extends Entity {
                                 SoundEvents.ROOTED_DIRT_BREAK;
                 serverLevel.playSound(null, this.getX(), this.getY(), this.getZ(), sound, SoundSource.BLOCKS, 0.7F, 0.85F);
             }
+        } else if (bladeResult.unitsDeposited() > 0) {
+            // Reversing discharge sound: settling of the whole heap
+            var placeSound = (this.carriedMaterial == GranularMaterialRegistry.SAND) ? SoundEvents.SAND_PLACE :
+                    (this.carriedMaterial == GranularMaterialRegistry.GRAVEL) ? SoundEvents.GRAVEL_PLACE :
+                            SoundEvents.ROOTED_DIRT_PLACE;
+            serverLevel.playSound(null, this.getX(), this.getY(), this.getZ(), placeSound, SoundSource.BLOCKS, 0.9F, 0.85F);
         }
 
         // 6. Update Synched Entity Data

@@ -85,6 +85,25 @@ class BladeDownRemovesAndPushesMaterialTest {
     }
 
     @Test
+    @DisplayName("A vanilla sand block keeps its material when the blade converts and excavates it")
+    void testConvertibleSandKeepsItsMaterial() {
+        TestGranularTerrain terrain = new TestGranularTerrain();
+        terrain.createConvertibleBlock(new BlockPos(0, 65, 2), GranularMaterialRegistry.SAND);
+
+        BladeTransform before = BladeTransform.compute(
+                new Vec3(0, 65, 0), 0, 0, 0, -0.20F, -2.5F);
+        BladeTransform after = BladeTransform.compute(
+                new Vec3(0, 65, 0.4), 0, 0, 0, -0.20F, -2.5F);
+
+        BladeTickResult result = BulldozerBladeController.tick(
+                terrain, before, after, 0, GranularMaterial.EMPTY);
+
+        assertTrue(result.unitsExcavated() > 0, "Blade must excavate the convertible sand block");
+        assertEquals(GranularMaterialRegistry.SAND.id(), result.carriedMaterialAfter().id(),
+                "Converted sand must not become dirt in the blade");
+    }
+
+    @Test
     @DisplayName("Supports dirt, sand, and gravel materials")
     void testMaterialSupport() {
         for (GranularMaterial mat : new GranularMaterial[]{

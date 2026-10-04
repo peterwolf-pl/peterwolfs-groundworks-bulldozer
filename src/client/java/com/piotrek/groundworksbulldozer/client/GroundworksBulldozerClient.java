@@ -6,6 +6,7 @@ import com.piotrek.groundworksbulldozer.client.input.BulldozerKeyBindings;
 import com.piotrek.groundworksbulldozer.client.model.BulldozerModel;
 import com.piotrek.groundworksbulldozer.client.render.BulldozerHudOverlay;
 import com.piotrek.groundworksbulldozer.client.render.BulldozerRenderer;
+import com.piotrek.groundworksbulldozer.client.sound.BulldozerEngineSoundController;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
@@ -28,8 +29,9 @@ public class GroundworksBulldozerClient implements ClientModInitializer {
         // Register keybindings
         BulldozerKeyBindings.register();
 
-        // Register input tick listener
+        // Register input and positional engine sound tick listeners
         ClientTickEvents.END_CLIENT_TICK.register(BulldozerInputHandler::clientTick);
+        ClientTickEvents.END_CLIENT_TICK.register(BulldozerEngineSoundController::clientTick);
 
         // Register in-cab HUD
         BulldozerHudOverlay.register();

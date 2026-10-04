@@ -19,6 +19,7 @@ import java.util.Set;
 public class TestGranularTerrain implements IGranularTerrainAccess {
 
     private final Map<BlockPos, GranularCell> cells = new HashMap<>();
+    private final Map<BlockPos, GranularMaterial> convertibleBlocks = new HashMap<>();
     private final Set<BlockPos> simulatedPositions = new HashSet<>();
 
     public void putCell(BlockPos pos, GranularCell cell) {
@@ -27,6 +28,10 @@ public class TestGranularTerrain implements IGranularTerrainAccess {
 
     public void createFullCell(BlockPos pos, GranularMaterial material) {
         cells.put(pos.immutable(), GranularCell.full(material));
+    }
+
+    public void createConvertibleBlock(BlockPos pos, GranularMaterial material) {
+        convertibleBlocks.put(pos.immutable(), material);
     }
 
     public void createPile(BlockPos pos, GranularMaterial material, int microvoxelLayers) {
@@ -58,7 +63,7 @@ public class TestGranularTerrain implements IGranularTerrainAccess {
     @Override
     public boolean isDiggable(BlockPos pos) {
         GranularCell cell = cells.get(pos);
-        return cell != null && !cell.isEmpty();
+        return (cell != null && !cell.isEmpty()) || convertibleBlocks.containsKey(pos);
     }
 
     @Override
@@ -68,11 +73,16 @@ public class TestGranularTerrain implements IGranularTerrainAccess {
 
     @Override
     public GranularCell getOrConvert(BlockPos pos) {
-        return cells.computeIfAbsent(pos.immutable(), p -> {
-            GranularCell cell = GranularCell.empty();
-            cell.setMaterialId(GranularMaterialRegistry.DIRT.id());
-            return cell;
-        });
+        BlockPos key = pos.immutable();
+        GranularCell existing = cells.get(key);
+        if (existing != null) return existing;
+        GranularMaterial material = convertibleBlocks.remove(key);
+        GranularCell converted = material != null
+                ? GranularCell.full(material)
+                : GranularCell.empty();
+        if (material == null) converted.setMaterialId(GranularMaterialRegistry.DIRT.id());
+        cells.put(key, converted);
+        return converted;
     }
 
     @Override

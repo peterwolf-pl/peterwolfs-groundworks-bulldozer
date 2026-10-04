@@ -88,31 +88,38 @@ class VolumeConservationTest {
     }
 
     @Test
-    @DisplayName("Lateral spill and forward berm conserve 100% of material volume")
-    void testSpillAndBermVolumeConservation() {
+    @DisplayName("Material stays in front of the blade until the blade is full")
+    void testNoSpillBeforeBladeIsFull() {
         TestGranularTerrain terrain = new TestGranularTerrain();
-
-        // Start with blade pre-filled near capacity (500 units)
-        int initialBladeUnits = 500;
-        GranularMaterial initialMaterial = GranularMaterialRegistry.SAND;
-
+        int carried = BulldozerBladeController.MAX_BLADE_CAPACITY - 1;
         BladeTransform prev = BladeTransform.compute(new Vec3(0, 65, 10.0), 0, 0, 0, 0.0F, 0.0F);
         BladeTransform curr = BladeTransform.compute(new Vec3(0, 65, 10.5), 0, 0, 0, 0.0F, 0.0F);
 
         BladeTickResult result = BulldozerBladeController.tick(
-                terrain,
-                prev,
-                curr,
-                initialBladeUnits,
-                initialMaterial
-        );
+                terrain, prev, curr, carried, GranularMaterialRegistry.SAND);
+
+        assertEquals(0, result.unitsDeposited(), "A non-full blade must not spill or drop a forward berm");
+        assertEquals(carried, result.carriedUnitsAfter(), "All material must remain pushed ahead of the blade");
+        assertEquals(0, terrain.countTotalWorldUnits());
+    }
+
+    @Test
+    @DisplayName("A full blade spills sideways and conserves 100% of material volume")
+    void testFullBladeSpillsSidewaysAndConservesVolume() {
+        TestGranularTerrain terrain = new TestGranularTerrain();
+        int initialBladeUnits = BulldozerBladeController.MAX_BLADE_CAPACITY;
+        GranularMaterial initialMaterial = GranularMaterialRegistry.SAND;
+        BladeTransform prev = BladeTransform.compute(new Vec3(0, 65, 10.0), 0, 0, 0, 0.0F, 0.0F);
+        BladeTransform curr = BladeTransform.compute(new Vec3(0, 65, 10.5), 0, 0, 0, 0.0F, 0.0F);
+
+        BladeTickResult result = BulldozerBladeController.tick(
+                terrain, prev, curr, initialBladeUnits, initialMaterial);
 
         int worldUnitsAfter = terrain.countTotalWorldUnits();
-        int bladeUnitsAfter = result.carriedUnitsAfter();
-
-        assertEquals(initialBladeUnits, worldUnitsAfter + bladeUnitsAfter,
-                "Pushed forward and spilled units plus remaining blade units must match initial blade units");
-        assertTrue(worldUnitsAfter > 0, "Some overloaded material must have spilled or pushed into berm");
-        assertTrue(!terrain.simulatedPositions().isEmpty(), "Spill/berm positions must be marked for simulation");
+        assertEquals(initialBladeUnits, worldUnitsAfter + result.carriedUnitsAfter(),
+                "Side spill plus material still ahead of the blade must conserve volume");
+        assertTrue(worldUnitsAfter > 0, "A full blade must spill material around its wings");
+        assertTrue(result.carriedUnitsAfter() < initialBladeUnits);
+        assertTrue(!terrain.simulatedPositions().isEmpty(), "Side-spill positions must relax");
     }
 }

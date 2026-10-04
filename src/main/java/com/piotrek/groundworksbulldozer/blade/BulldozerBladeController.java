@@ -20,8 +20,8 @@ import java.util.Set;
  *   <li>Continuous height grading: Raised blade doesn't touch ground; lowered blade cuts deeper.</li>
  *   <li>Volumetric conservation: Every removed microvoxel is accounted for in the live carry buffer,
  *       depression filling, forward berm, or lateral spillage. Zero duplication, zero loss.</li>
- *   <li>Terrain leveling: Cuts off peaks above blade edge and fills ruts/depressions below blade edge.</li>
- *   <li>Lateral spillage: Overloaded material escapes past left and right blade wings.</li>
+ *   <li>Front load retention: Excavated material remains pushed against the moldboard.</li>
+ *   <li>Lateral spillage: Material escapes past the wings only after the blade reaches capacity.</li>
  *   <li>Groundworks relaxation: Marks modified cells for natural angle-of-repose settling.</li>
  * </ul>
  */
@@ -78,10 +78,19 @@ public final class BulldozerBladeController {
             return new BladeTickResult(0, 0, carriedUnitsBefore, carriedMaterial, false, List.of());
         }
 
-        // Check if moving forward in the direction of the blade face
+        // Check movement direction relative to blade orientation
         double forwardAlignment = motion.normalize().dot(currTransform.forward());
+
+        // Reversing away from pushed material: leave the full carried load as a blade-width heap on the ground!
+        if (forwardAlignment < -0.05D) {
+            if (carriedUnitsBefore > 0 && carriedMaterial != GranularMaterial.EMPTY) {
+                return depositReversingHeap(terrain, prevTransform, carriedUnitsBefore, carriedMaterial);
+            }
+            return new BladeTickResult(0, 0, 0, GranularMaterial.EMPTY, false, List.of());
+        }
+
         if (forwardAlignment < 0.1D) {
-            // Not moving forward into terrain (reversing or pure lateral drift)
+            // Not moving forward into terrain (pure lateral drift or stationary)
             return new BladeTickResult(0, 0, carriedUnitsBefore, carriedMaterial, false, List.of());
         }
 
@@ -125,7 +134,7 @@ public final class BulldozerBladeController {
                     if (processedBlocks.add(targetPos) && terrain.isDiggable(targetPos)) {
                         int room = MAX_BLADE_CAPACITY - currentUnits;
                         if (room > 0) {
-                            GranularCell cell = terrain.getCell(targetPos);
+                            GranularCell cell = terrain.getOrConvert(targetPos);
                             int cellMatId = (cell != null && !cell.isEmpty()) ? cell.materialId() : 0;
 
                             int toRemove = Math.min(room, 64);
@@ -146,56 +155,15 @@ public final class BulldozerBladeController {
                     }
                 }
 
-                // B. Fill small depressions behind blade cutting edge
-                if (currentUnits > 0 && currentMaterial != GranularMaterial.EMPTY) {
-                    Vec3 rearPt = pt.subtract(currTransform.forward().scale(0.65D));
-                    BlockPos fillPos = BlockPos.containing(rearPt.x, rearPt.y - 0.1D, rearPt.z);
-                    if (!affected.contains(fillPos)) {
-                        int fillQuota = Math.min(currentUnits, 16);
-                        int filled = terrain.fillDepressionBelow(fillPos, pt.y, currentMaterial, fillQuota);
-                        if (filled > 0) {
-                            totalDeposited += filled;
-                            currentUnits -= filled;
-                            affected.add(fillPos);
-                        }
-                    }
-                }
             }
         }
 
-        // ── 2. Forward Berm Deposition (Active Pushing Forward) ────────────
-        // When carrying material, actively push it ahead of the moldboard into a rolling berm
-        if (currentUnits > 32 && currentMaterial != GranularMaterial.EMPTY) {
-            int toPushAhead = Math.min(currentUnits, Math.max(16, currentUnits / 3));
-
-            Vec3 frontCenter = currTransform.cuttingEdgeCenter().add(currTransform.forward().scale(0.85D));
-            Vec3 frontLeft = currTransform.leftWingPoint().add(currTransform.forward().scale(0.85D)).add(currTransform.right().scale(0.5D));
-            Vec3 frontRight = currTransform.rightWingPoint().add(currTransform.forward().scale(0.85D)).subtract(currTransform.right().scale(0.5D));
-
-            BlockPos[] pushPositions = new BlockPos[]{
-                    BlockPos.containing(frontCenter.x, frontCenter.y, frontCenter.z),
-                    BlockPos.containing(frontLeft.x, frontLeft.y, frontLeft.z),
-                    BlockPos.containing(frontRight.x, frontRight.y, frontRight.z)
-            };
-
-            int perPos = Math.max(1, toPushAhead / pushPositions.length);
-            for (BlockPos pushPos : pushPositions) {
-                if (currentUnits <= 0) break;
-                int deposited = terrain.deposit(pushPos, currentMaterial, Math.min(currentUnits, perPos));
-                if (deposited > 0) {
-                    totalDeposited += deposited;
-                    currentUnits -= deposited;
-                    affected.add(pushPos);
-                    terrain.markSimulate(pushPos);
-                }
-            }
-        }
-
-        // ── 3. Lateral Spill (Material escapes around blade left/right edges)
-        // When blade has significant material or is overloaded, material spills around wings
-        if (currentUnits > 96 && currentMaterial != GranularMaterial.EMPTY) {
-            int overflow = currentUnits - 96;
-            int spillPerSide = Math.min(24, Math.max(1, overflow / 6));
+        // ── 2. Lateral Spill ───────────────────────────────────────────────
+        // The visible carried surcharge represents the rolling load in front of the moldboard.
+        // Keep that load intact until the blade is physically full; only then can it escape
+        // around the two wings.
+        if (currentUnits >= MAX_BLADE_CAPACITY && currentMaterial != GranularMaterial.EMPTY) {
+            int spillPerSide = 24;
 
             // Left wing spill
             Vec3 leftSpillPt = currTransform.leftWingPoint().subtract(currTransform.right().scale(0.5D));
@@ -209,7 +177,7 @@ public final class BulldozerBladeController {
             }
 
             // Right wing spill
-            if (currentUnits > 96) {
+            if (currentUnits > 0) {
                 Vec3 rightSpillPt = currTransform.rightWingPoint().add(currTransform.right().scale(0.5D));
                 BlockPos rightSpillPos = BlockPos.containing(rightSpillPt.x, rightSpillPt.y, rightSpillPt.z);
                 int rightDeposited = terrain.deposit(rightSpillPos, currentMaterial, Math.min(currentUnits, spillPerSide));
@@ -238,6 +206,69 @@ public final class BulldozerBladeController {
                 currentUnits,
                 resultMaterial,
                 isPushing,
+                new ArrayList<>(affected)
+        );
+    }
+
+    /**
+     * Deposits the entire carried blade load into a blade-width heap on the ground when reversing.
+     */
+    private static BladeTickResult depositReversingHeap(
+            IGranularTerrainAccess terrain,
+            BladeTransform prevTransform,
+            int carriedUnitsBefore,
+            GranularMaterial carriedMaterial
+    ) {
+        int currentUnits = carriedUnitsBefore;
+        int totalDeposited = 0;
+        Set<BlockPos> affected = new HashSet<>();
+
+        Vec3 forward = prevTransform.forward();
+        Vec3 right = prevTransform.right();
+        Vec3 center = prevTransform.cuttingEdgeCenter();
+
+        // 5 points spanning the full 3.0m width of the blade
+        Vec3 ptCenter = center.add(forward.scale(0.55D));
+        Vec3 ptMidLeft = center.subtract(right.scale(0.75D)).add(forward.scale(0.45D));
+        Vec3 ptMidRight = center.add(right.scale(0.75D)).add(forward.scale(0.45D));
+        Vec3 ptOuterLeft = center.subtract(right.scale(1.35D)).add(forward.scale(0.35D));
+        Vec3 ptOuterRight = center.add(right.scale(1.35D)).add(forward.scale(0.35D));
+
+        Vec3[] heapPoints = new Vec3[]{ptCenter, ptMidLeft, ptMidRight, ptOuterLeft, ptOuterRight};
+        double[] ratios = new double[]{0.32D, 0.24D, 0.24D, 0.10D, 0.10D};
+
+        for (int i = 0; i < heapPoints.length && currentUnits > 0; i++) {
+            Vec3 pt = heapPoints[i];
+            BlockPos targetPos = BlockPos.containing(pt.x, pt.y, pt.z);
+
+            int quota = (i == heapPoints.length - 1) ? currentUnits : (int) Math.round(carriedUnitsBefore * ratios[i]);
+            quota = Math.min(currentUnits, Math.max(1, quota));
+
+            int deposited = terrain.deposit(targetPos, carriedMaterial, quota);
+            if (deposited > 0) {
+                totalDeposited += deposited;
+                currentUnits -= deposited;
+                affected.add(targetPos);
+                terrain.markSimulate(targetPos);
+            }
+        }
+
+        // If any units remain due to column capacity, deposit remainder into center
+        if (currentUnits > 0) {
+            BlockPos centerPos = BlockPos.containing(ptCenter.x, ptCenter.y, ptCenter.z);
+            int deposited = terrain.deposit(centerPos, carriedMaterial, currentUnits);
+            totalDeposited += deposited;
+            currentUnits -= deposited;
+            affected.add(centerPos);
+            terrain.markSimulate(centerPos);
+        }
+
+        return new BladeTickResult(
+                0,
+                totalDeposited,
+                currentUnits,
+                currentUnits > 0 ? carriedMaterial : GranularMaterial.EMPTY,
+                false,
                 new ArrayList<>(affected)
         );
     }
