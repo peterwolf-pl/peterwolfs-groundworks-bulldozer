@@ -233,8 +233,8 @@ public class BulldozerModel extends EntityModel<BulldozerRenderState> {
 
     @Override
     public void setupAnim(BulldozerRenderState state) {
-        // Continuous blade lifting animation
-        float armAngle = -state.bladeHeight * 0.45F;
+        // Continuous blade lifting animation: positive bladeHeight lifts the blade up
+        float armAngle = state.bladeHeight * 0.45F;
         this.pushArms.xRot = armAngle;
 
         // Blade pitch rotation on push arm tip
