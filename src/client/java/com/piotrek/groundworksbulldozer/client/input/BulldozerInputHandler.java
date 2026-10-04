@@ -32,17 +32,21 @@ public final class BulldozerInputHandler {
         }
 
         if (client.player.getVehicle() instanceof GroundworksBulldozerEntity dozer) {
-            // Read driving inputs (WASD)
-            boolean keyForward = client.options.keyUp.isDown()
-                    || (client.player.input != null && client.player.input.keyPresses.forward());
-            boolean keyBackward = client.options.keyDown.isDown()
-                    || (client.player.input != null && client.player.input.keyPresses.backward());
-            boolean keyLeft = client.options.keyLeft.isDown()
-                    || (client.player.input != null && client.player.input.keyPresses.left());
-            boolean keyRight = client.options.keyRight.isDown()
-                    || (client.player.input != null && client.player.input.keyPresses.right());
-
             boolean inGame = client.mouseHandler != null && client.mouseHandler.isMouseGrabbed();
+
+            // Read driving inputs (WASD from KeyMapping, PlayerInput, or Direct Keyboard)
+            boolean keyForward = (client.options.keyUp != null && client.options.keyUp.isDown())
+                    || (client.player.input != null && client.player.input.keyPresses.forward())
+                    || (inGame && InputConstants.isKeyDown(InputConstants.KEY_W));
+            boolean keyBackward = (client.options.keyDown != null && client.options.keyDown.isDown())
+                    || (client.player.input != null && client.player.input.keyPresses.backward())
+                    || (inGame && InputConstants.isKeyDown(InputConstants.KEY_S));
+            boolean keyLeft = (client.options.keyLeft != null && client.options.keyLeft.isDown())
+                    || (client.player.input != null && client.player.input.keyPresses.left())
+                    || (inGame && InputConstants.isKeyDown(InputConstants.KEY_A));
+            boolean keyRight = (client.options.keyRight != null && client.options.keyRight.isDown())
+                    || (client.player.input != null && client.player.input.keyPresses.right())
+                    || (inGame && InputConstants.isKeyDown(InputConstants.KEY_D));
 
             // Read blade lift inputs (Arrow Up / Down)
             boolean bladeUp = (BulldozerKeyBindings.KEY_BLADE_UP != null && BulldozerKeyBindings.KEY_BLADE_UP.isDown())
@@ -86,7 +90,7 @@ public final class BulldozerInputHandler {
                 lastSteer = steer;
                 lastBladeLift = bladeLift;
                 lastBladeTilt = bladeTilt;
-                keepaliveTicks = 5;
+                keepaliveTicks = 3;
             }
         } else {
             lastThrottle = 0.0F;

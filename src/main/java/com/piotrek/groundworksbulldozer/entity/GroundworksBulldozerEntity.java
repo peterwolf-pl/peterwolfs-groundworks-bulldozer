@@ -136,7 +136,7 @@ public class GroundworksBulldozerEntity extends Entity {
         this.inputSteer = Mth.clamp(steer, -1.0F, 1.0F);
         this.inputBladeLift = Mth.clamp(bladeLift, -1.0F, 1.0F);
         this.inputBladeTilt = Mth.clamp(bladeTilt, -1.0F, 1.0F);
-        this.inputFreshTicks = 6;
+        this.inputFreshTicks = 10;
     }
 
     // ── Ticking & Simulation ─────────────────────────────────────────
@@ -151,17 +151,28 @@ public class GroundworksBulldozerEntity extends Entity {
 
         ServerLevel serverLevel = (ServerLevel) this.level();
 
-        // 1. Check driver input staleness
-        if (inputFreshTicks > 0) {
-            inputFreshTicks--;
-        } else {
-            inputThrottle = 0.0F;
-            inputSteer = 0.0F;
-            inputBladeLift = 0.0F;
-            inputBladeTilt = 0.0F;
+        // 1. Process driver input (custom packet + vanilla input fallback)
+        Entity driver = this.getControllingPassenger();
+        if (driver instanceof ServerPlayer player) {
+            var vanillaInput = player.getLastClientInput();
+            if (this.inputFreshTicks <= 0 || Math.abs(this.inputThrottle) < 0.01F) {
+                if (vanillaInput.forward()) this.inputThrottle = 1.0F;
+                else if (vanillaInput.backward()) this.inputThrottle = -1.0F;
+            }
+            if (this.inputFreshTicks <= 0 || Math.abs(this.inputSteer) < 0.01F) {
+                if (vanillaInput.left()) this.inputSteer = -1.0F;
+                else if (vanillaInput.right()) this.inputSteer = 1.0F;
+            }
         }
 
-        boolean hasDriver = this.getControllingPassenger() != null;
+        if (this.inputFreshTicks > 0) {
+            this.inputFreshTicks--;
+        } else {
+            this.inputBladeLift = 0.0F;
+            this.inputBladeTilt = 0.0F;
+        }
+
+        boolean hasDriver = driver != null;
         this.entityData.set(ENGINE_RUNNING, hasDriver);
 
         // 2. Smooth blade height & angle kinematics
@@ -192,12 +203,19 @@ public class GroundworksBulldozerEntity extends Entity {
 
         // Apply forward translation and gravity
         Vec3 motion = trackState.forwardDelta();
-        if (!this.isNoGravity()) {
-            double vert = this.onGround() ? -0.05D : this.getDeltaMovement().y - 0.08D;
-            motion = new Vec3(motion.x, Math.max(-0.6D, vert), motion.z);
+        if (!this.onGround()) {
+            motion = motion.add(0.0D, -0.08D, 0.0D);
+        } else {
+            motion = motion.add(0.0D, -0.02D, 0.0D); // Keep tracks firmly grounded
         }
         this.setDeltaMovement(motion);
-        this.move(MoverType.SELF, this.getDeltaMovement());
+        this.move(MoverType.SELF, motion);
+
+        // Force position synchronization to passengers and tracking clients while driving
+        if (Math.abs(trackState.leftSpeed()) > 0.001F || Math.abs(trackState.rightSpeed()) > 0.001F || Math.abs(trackState.yawDeltaDegrees()) > 0.01F) {
+            this.syncPosition = true;
+            this.needsSync = true;
+        }
 
         // 4. Update Blade Transforms (Previous & Current)
         previousBladeTransform = currentBladeTransform;
@@ -272,6 +290,16 @@ public class GroundworksBulldozerEntity extends Entity {
     @Override
     public boolean canBeCollidedWith(@Nullable Entity other) {
         return other != null && !this.hasPassenger(other);
+    }
+
+    @Override
+    public boolean canCollideWith(Entity other) {
+        return false;
+    }
+
+    @Override
+    public float maxUpStep() {
+        return 1.25F;
     }
 
     @Override
