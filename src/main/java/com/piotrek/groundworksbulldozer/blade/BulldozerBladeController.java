@@ -146,9 +146,10 @@ public final class BulldozerBladeController {
                     }
                 }
 
-                // B. Fill small depressions below blade cutting edge
+                // B. Fill small depressions behind blade cutting edge
                 if (currentUnits > 0 && currentMaterial != GranularMaterial.EMPTY) {
-                    BlockPos fillPos = BlockPos.containing(pt.x, pt.y - 0.2D, pt.z);
+                    Vec3 rearPt = pt.subtract(currTransform.forward().scale(0.65D));
+                    BlockPos fillPos = BlockPos.containing(rearPt.x, rearPt.y - 0.1D, rearPt.z);
                     if (!affected.contains(fillPos)) {
                         int fillQuota = Math.min(currentUnits, 16);
                         int filled = terrain.fillDepressionBelow(fillPos, pt.y, currentMaterial, fillQuota);
@@ -162,34 +163,44 @@ public final class BulldozerBladeController {
             }
         }
 
-        // ── 2. Forward Berm Deposition ─────────────────────────────────────
-        // As the blade continues pushing a heavy surcharge forward, deposit into the forward berm
-        if (currentUnits > 256 && currentMaterial != GranularMaterial.EMPTY) {
-            Vec3 bermPoint = currTransform.cuttingEdgeCenter().add(currTransform.forward().scale(1.0D));
-            BlockPos bermPos = BlockPos.containing(bermPoint.x, bermPoint.y, bermPoint.z);
+        // ── 2. Forward Berm Deposition (Active Pushing Forward) ────────────
+        // When carrying material, actively push it ahead of the moldboard into a rolling berm
+        if (currentUnits > 32 && currentMaterial != GranularMaterial.EMPTY) {
+            int toPushAhead = Math.min(currentUnits, Math.max(16, currentUnits / 3));
 
-            int bermQuota = Math.min(32, (currentUnits - 256) / 4);
-            if (bermQuota > 0) {
-                int deposited = terrain.deposit(bermPos, currentMaterial, bermQuota);
+            Vec3 frontCenter = currTransform.cuttingEdgeCenter().add(currTransform.forward().scale(0.85D));
+            Vec3 frontLeft = currTransform.leftWingPoint().add(currTransform.forward().scale(0.85D)).add(currTransform.right().scale(0.5D));
+            Vec3 frontRight = currTransform.rightWingPoint().add(currTransform.forward().scale(0.85D)).subtract(currTransform.right().scale(0.5D));
+
+            BlockPos[] pushPositions = new BlockPos[]{
+                    BlockPos.containing(frontCenter.x, frontCenter.y, frontCenter.z),
+                    BlockPos.containing(frontLeft.x, frontLeft.y, frontLeft.z),
+                    BlockPos.containing(frontRight.x, frontRight.y, frontRight.z)
+            };
+
+            int perPos = Math.max(1, toPushAhead / pushPositions.length);
+            for (BlockPos pushPos : pushPositions) {
+                if (currentUnits <= 0) break;
+                int deposited = terrain.deposit(pushPos, currentMaterial, Math.min(currentUnits, perPos));
                 if (deposited > 0) {
                     totalDeposited += deposited;
                     currentUnits -= deposited;
-                    affected.add(bermPos);
-                    terrain.markSimulate(bermPos);
+                    affected.add(pushPos);
+                    terrain.markSimulate(pushPos);
                 }
             }
         }
 
         // ── 3. Lateral Spill (Material escapes around blade left/right edges)
         // When blade has significant material or is overloaded, material spills around wings
-        if (currentUnits > 192 && currentMaterial != GranularMaterial.EMPTY) {
-            int overflow = currentUnits - 192;
-            int spillPerSide = Math.min(24, Math.max(1, overflow / 8));
+        if (currentUnits > 96 && currentMaterial != GranularMaterial.EMPTY) {
+            int overflow = currentUnits - 96;
+            int spillPerSide = Math.min(24, Math.max(1, overflow / 6));
 
             // Left wing spill
-            Vec3 leftSpillPt = currTransform.leftWingPoint().subtract(currTransform.right().scale(0.4D));
+            Vec3 leftSpillPt = currTransform.leftWingPoint().subtract(currTransform.right().scale(0.5D));
             BlockPos leftSpillPos = BlockPos.containing(leftSpillPt.x, leftSpillPt.y, leftSpillPt.z);
-            int leftDeposited = terrain.deposit(leftSpillPos, currentMaterial, spillPerSide);
+            int leftDeposited = terrain.deposit(leftSpillPos, currentMaterial, Math.min(currentUnits, spillPerSide));
             if (leftDeposited > 0) {
                 totalDeposited += leftDeposited;
                 currentUnits -= leftDeposited;
@@ -198,10 +209,10 @@ public final class BulldozerBladeController {
             }
 
             // Right wing spill
-            if (currentUnits > 192) {
-                Vec3 rightSpillPt = currTransform.rightWingPoint().add(currTransform.right().scale(0.4D));
+            if (currentUnits > 96) {
+                Vec3 rightSpillPt = currTransform.rightWingPoint().add(currTransform.right().scale(0.5D));
                 BlockPos rightSpillPos = BlockPos.containing(rightSpillPt.x, rightSpillPt.y, rightSpillPt.z);
-                int rightDeposited = terrain.deposit(rightSpillPos, currentMaterial, spillPerSide);
+                int rightDeposited = terrain.deposit(rightSpillPos, currentMaterial, Math.min(currentUnits, spillPerSide));
                 if (rightDeposited > 0) {
                     totalDeposited += rightDeposited;
                     currentUnits -= rightDeposited;
@@ -211,9 +222,12 @@ public final class BulldozerBladeController {
             }
         }
 
+        GranularMaterial resultMaterial = currentMaterial;
         if (currentUnits <= 0) {
             currentUnits = 0;
-            currentMaterial = GranularMaterial.EMPTY;
+            if (totalExcavated == 0 && totalDeposited == 0) {
+                resultMaterial = GranularMaterial.EMPTY;
+            }
         }
 
         boolean isPushing = totalExcavated > 0 || currentUnits > 32;
@@ -222,7 +236,7 @@ public final class BulldozerBladeController {
                 totalExcavated,
                 totalDeposited,
                 currentUnits,
-                currentMaterial,
+                resultMaterial,
                 isPushing,
                 new ArrayList<>(affected)
         );

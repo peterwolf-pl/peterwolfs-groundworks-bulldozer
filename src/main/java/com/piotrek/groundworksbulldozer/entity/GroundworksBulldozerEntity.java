@@ -262,9 +262,16 @@ public class GroundworksBulldozerEntity extends Entity {
         this.lastExcavatedUnits = bladeResult.unitsExcavated();
         this.lastDepositedUnits = bladeResult.unitsDeposited();
 
-        // Spawn visual dust/shaving particles at cutting edge when working
-        if (bladeResult.unitsExcavated() > 0) {
-            spawnWorkingParticles(serverLevel, currentBladeTransform.cuttingEdgeCenter(), carriedMaterial);
+        // Spawn visual dust/shaving particles & scraping audio when actively pushing terrain
+        if (bladeResult.isPushing() || bladeResult.unitsExcavated() > 0 || bladeResult.unitsDeposited() > 0) {
+            spawnWorkingParticles(serverLevel, currentBladeTransform, this.carriedMaterial);
+
+            if (this.tickCount % 4 == 0) {
+                var sound = (this.carriedMaterial == GranularMaterialRegistry.SAND) ? SoundEvents.SAND_BREAK :
+                        (this.carriedMaterial == GranularMaterialRegistry.GRAVEL) ? SoundEvents.GRAVEL_BREAK :
+                                SoundEvents.ROOTED_DIRT_BREAK;
+                serverLevel.playSound(null, this.getX(), this.getY(), this.getZ(), sound, SoundSource.BLOCKS, 0.7F, 0.85F);
+            }
         }
 
         // 6. Update Synched Entity Data
@@ -279,14 +286,27 @@ public class GroundworksBulldozerEntity extends Entity {
         this.entityData.set(IS_PUSHING, bladeResult.isPushing());
     }
 
-    private void spawnWorkingParticles(ServerLevel level, Vec3 pos, GranularMaterial mat) {
+    private void spawnWorkingParticles(ServerLevel level, BladeTransform transform, GranularMaterial mat) {
         var block = (mat != null && mat.sourceBlock() != null) ? mat.sourceBlock() : Blocks.DIRT;
+        BlockParticleOption particle = new BlockParticleOption(ParticleTypes.BLOCK, block.defaultBlockState());
+
+        for (Vec3 pt : transform.cuttingEdgePoints()) {
+            level.sendParticles(
+                    particle,
+                    pt.x, pt.y + 0.12D, pt.z,
+                    2,
+                    0.15D, 0.08D, 0.15D,
+                    0.05D
+            );
+        }
+
+        Vec3 front = transform.cuttingEdgeCenter().add(transform.forward().scale(0.65D));
         level.sendParticles(
-                new BlockParticleOption(ParticleTypes.BLOCK, block.defaultBlockState()),
-                pos.x, pos.y + 0.1D, pos.z,
+                particle,
+                front.x, front.y + 0.25D, front.z,
                 4,
-                0.4D, 0.15D, 0.4D,
-                0.05D
+                0.5D, 0.15D, 0.5D,
+                0.06D
         );
     }
 
