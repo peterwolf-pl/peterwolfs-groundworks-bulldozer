@@ -10,6 +10,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContex
 import net.fabricmc.fabric.api.client.gametest.v1.screenshot.TestScreenshotOptions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Blocks;
 
 import java.nio.file.Path;
@@ -112,6 +113,26 @@ public final class BulldozerVisualGameTest implements FabricClientGameTest {
             server.runCommand("teleport @a 3.5 182.2 4.2 145 16");
             context.waitTicks(10);
             capture(context, connection, "bulldozer_07_blade_lowered_grading");
+
+            // ── Scene 8: Dismount & Targetability / Removal Verification ────
+            server.runOnServer(minecraftServer -> {
+                GroundworksBulldozerEntity dozer = dozerHolder[0];
+                var players = minecraftServer.getPlayerList().getPlayers();
+                if (!players.isEmpty() && dozer != null) {
+                    ServerPlayer player = players.get(0);
+                    if (!dozer.isPickable()) {
+                        throw new AssertionError("Bulldozer must be pickable!");
+                    }
+                    if (!dozer.isAttackable()) {
+                        throw new AssertionError("Bulldozer must be attackable!");
+                    }
+                    player.stopRiding();
+                    if (dozer.hasPassenger(player)) {
+                        throw new AssertionError("Player must be able to dismount!");
+                    }
+                }
+            });
+            context.waitTicks(10);
         }
     }
 

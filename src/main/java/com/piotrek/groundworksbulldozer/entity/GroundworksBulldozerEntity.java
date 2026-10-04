@@ -15,6 +15,8 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -27,6 +29,7 @@ import net.minecraft.world.entity.LinearInterpolationHandler;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.storage.ValueInput;
@@ -257,10 +260,52 @@ public class GroundworksBulldozerEntity extends Entity {
     // ── Passenger Interaction & Seating ──────────────────────────────
 
     @Override
+    public boolean isPickable() {
+        return !this.isRemoved();
+    }
+
+    @Override
+    public boolean isAttackable() {
+        return true;
+    }
+
+    @Override
+    public boolean canBeCollidedWith(@Nullable Entity other) {
+        return other != null && !this.hasPassenger(other);
+    }
+
+    @Override
+    public boolean isPushable() {
+        return false;
+    }
+
+    @Override
+    public boolean hurtClient(DamageSource source) {
+        return true;
+    }
+
+    @Override
     public InteractionResult interact(Player player, InteractionHand hand, Vec3 location) {
+        // Shift + Right-Click with empty hand: retrieve / dismantle bulldozer into inventory
+        if (player.isSecondaryUseActive() && player.getItemInHand(hand).isEmpty()) {
+            if (!this.level().isClientSide() && this.getPassengers().isEmpty()) {
+                if (!player.getAbilities().instabuild) {
+                    player.getInventory().add(new ItemStack(GroundworksBulldozerMod.BULLDOZER_ITEM));
+                }
+                this.level().playSound(
+                        null, this.getX(), this.getY(), this.getZ(),
+                        SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 1.0F, 1.0F
+                );
+                this.discard();
+                return InteractionResult.SUCCESS;
+            }
+            return InteractionResult.SUCCESS;
+        }
+
         if (player.isSecondaryUseActive()) {
             return InteractionResult.PASS;
         }
+
         if (!this.level().isClientSide()) {
             if (this.getPassengers().isEmpty()) {
                 player.startRiding(this);
@@ -288,44 +333,50 @@ public class GroundworksBulldozerEntity extends Entity {
 
     @Override
     public Vec3 getPassengerRidingPosition(Entity passenger) {
-        // Seat is inside the enclosed cab, positioned behind the engine hood
-        double yawRad = Math.toRadians(this.getYRot());
-        Vec3 forward = new Vec3(-Math.sin(yawRad), 0.0D, Math.cos(yawRad));
-        Vec3 up = new Vec3(0.0D, 1.0D, 0.0D);
-
-        // 0.2m behind vehicle center, 1.1m elevation
-        return this.position()
-                .subtract(forward.scale(0.25D))
-                .add(up.scale(1.10D));
+        return this.position().add(this.getPassengerAttachmentPoint(passenger, this.getDimensions(this.getPose()), 1.0F));
     }
 
     @Override
     protected Vec3 getPassengerAttachmentPoint(Entity passenger, EntityDimensions dimensions, float scale) {
-        return this.getPassengerRidingPosition(passenger).subtract(this.position());
+        double yawRad = Math.toRadians(this.getYRot());
+        Vec3 forward = new Vec3(-Math.sin(yawRad), 0.0D, Math.cos(yawRad));
+        Vec3 up = new Vec3(0.0D, 1.0D, 0.0D);
+
+        // 0.25m behind vehicle center, 1.10m elevation inside cab
+        return forward.scale(-0.25D).add(up.scale(1.10D));
     }
 
     @Override
     public Vec3 getDismountLocationForPassenger(LivingEntity passenger) {
         double yawRad = Math.toRadians(this.getYRot());
         Vec3 left = new Vec3(-Math.cos(yawRad), 0.0D, -Math.sin(yawRad));
-        return this.position().add(left.scale(2.0D)).add(0.0D, 0.25D, 0.0D);
+        return this.position().add(left.scale(2.2D)).add(0.0D, 0.25D, 0.0D);
     }
 
     @Override
     public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
-        if (this.isInvulnerable()) {
+        if (this.isInvulnerableToBase(source)) {
             return false;
         }
+
+        level.playSound(
+                null, this.getX(), this.getY(), this.getZ(),
+                SoundEvents.ANVIL_HIT, SoundSource.PLAYERS, 0.8F, 1.1F
+        );
+
         if (source.getEntity() instanceof Player player) {
-            if (player.getAbilities().instabuild) {
-                this.discard();
-                return true;
+            if (!player.getAbilities().instabuild) {
+                this.spawnAtLocation(level, GroundworksBulldozerMod.BULLDOZER_ITEM);
             }
-            this.spawnAtLocation(level, GroundworksBulldozerMod.BULLDOZER_ITEM);
+            this.ejectPassengers();
             this.discard();
             return true;
         }
-        return false;
+
+        // Generic damage, explosions, /kill command
+        this.ejectPassengers();
+        this.discard();
+        return true;
     }
 
     // ── Getters for Physical Blade State ─────────────────────────────
