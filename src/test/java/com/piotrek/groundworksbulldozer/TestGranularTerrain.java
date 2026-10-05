@@ -59,6 +59,13 @@ public class TestGranularTerrain implements IGranularTerrainAccess {
         return simulatedPositions;
     }
 
+    /**
+     * Test-only inspection helper. Not part of the production terrain boundary.
+     */
+    public GranularCell getCell(BlockPos pos) {
+        return cells.get(pos);
+    }
+
     @Override
     public boolean isDiggable(BlockPos pos) {
         GranularCell cell = cells.get(pos);
