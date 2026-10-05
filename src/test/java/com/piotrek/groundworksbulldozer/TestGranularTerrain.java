@@ -1,11 +1,13 @@
 package com.piotrek.groundworksbulldozer;
 
+import com.piotrek.groundworks.api.excavation.ExcavationResult;
 import com.piotrek.groundworks.api.material.GranularMaterial;
 import com.piotrek.groundworks.terrain.cell.GranularCell;
 import com.piotrek.groundworksbulldozer.integration.groundworks.IGranularTerrainAccess;
 import net.minecraft.core.BlockPos;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -83,17 +85,36 @@ public class TestGranularTerrain implements IGranularTerrainAccess {
     }
 
     @Override
-    public int excavateMicrovoxelsAbove(BlockPos pos, double worldCutY, int maxUnits) {
-        if (maxUnits <= 0) return 0;
+    public ExcavationResult excavateMicrovoxelsAbove(
+            BlockPos pos,
+            double worldCutY,
+            int maxUnits,
+            GranularMaterial requiredMaterial
+    ) {
+        if (maxUnits <= 0) return ExcavationResult.NONE;
+
+        GranularMaterial candidateMaterial = getMaterial(pos);
+        GranularMaterial required =
+                requiredMaterial != null && requiredMaterial.id() != 0
+                        ? requiredMaterial
+                        : null;
+        if (candidateMaterial == GranularMaterial.EMPTY
+                || (required != null && candidateMaterial.id() != required.id())) {
+            return ExcavationResult.NONE;
+        }
 
         GranularCell cell = getOrConvert(pos);
-        if (cell == null || cell.isEmpty()) return 0;
+        if (cell == null || cell.isEmpty()) return ExcavationResult.NONE;
+        if (required != null && cell.materialId() != required.id()) {
+            return ExcavationResult.NONE;
+        }
 
+        GranularMaterial material = cell.material();
         double localCutY = (worldCutY - pos.getY()) * GranularCell.RESOLUTION;
         int startY = localCutY <= 0.0D
                 ? 0
                 : (int) Math.ceil(localCutY - EPSILON);
-        if (startY >= GranularCell.RESOLUTION) return 0;
+        if (startY >= GranularCell.RESOLUTION) return ExcavationResult.NONE;
 
         int removed = 0;
         for (int y = GranularCell.RESOLUTION - 1; y >= startY && removed < maxUnits; y--) {
@@ -109,7 +130,9 @@ public class TestGranularTerrain implements IGranularTerrainAccess {
         if (cell.isEmpty()) {
             cells.remove(pos);
         }
-        return removed;
+        return removed > 0
+                ? new ExcavationResult(material, removed, List.of(pos.immutable()))
+                : ExcavationResult.NONE;
     }
 
     @Override
