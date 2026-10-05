@@ -1,8 +1,6 @@
 package com.piotrek.groundworksbulldozer.blade;
 
 import com.piotrek.groundworks.api.material.GranularMaterial;
-import com.piotrek.groundworks.api.material.GranularMaterialRegistry;
-import com.piotrek.groundworks.terrain.cell.GranularCell;
 import com.piotrek.groundworksbulldozer.integration.groundworks.IGranularTerrainAccess;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
@@ -134,9 +132,7 @@ public final class BulldozerBladeController {
                     if (processedBlocks.add(targetPos) && terrain.isDiggable(targetPos)) {
                         int room = MAX_BLADE_CAPACITY - currentUnits;
                         if (room > 0) {
-                            GranularCell cell = terrain.getOrConvert(targetPos);
-                            int cellMatId = (cell != null && !cell.isEmpty()) ? cell.materialId() : 0;
-
+                            GranularMaterial sourceMaterial = terrain.getMaterial(targetPos);
                             int toRemove = Math.min(room, 128);
                             int removed = terrain.excavateMicrovoxelsAbove(targetPos, pt.y, toRemove);
                             if (removed > 0) {
@@ -144,11 +140,9 @@ public final class BulldozerBladeController {
                                 currentUnits += removed;
                                 affected.add(targetPos);
 
-                                if (currentMaterial == GranularMaterial.EMPTY && cellMatId != 0) {
-                                    currentMaterial = GranularMaterialRegistry.byId(cellMatId);
-                                }
-                                if (currentMaterial == GranularMaterial.EMPTY) {
-                                    currentMaterial = GranularMaterialRegistry.DIRT;
+                                if (currentMaterial == GranularMaterial.EMPTY
+                                        && sourceMaterial != GranularMaterial.EMPTY) {
+                                    currentMaterial = sourceMaterial;
                                 }
                             }
                         }
