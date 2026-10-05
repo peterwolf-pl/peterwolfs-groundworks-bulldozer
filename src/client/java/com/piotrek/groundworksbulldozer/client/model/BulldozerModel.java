@@ -128,16 +128,6 @@ public class BulldozerModel extends EntityModel<BulldozerRenderState> {
                         // Rear bulkhead panel
                         .texOffs(184, 76).addBox(-10.0F, -5.0F, -15.5F, 20.0F, 8.0F, 1.5F)
 
-                        // ── Panoramic Safety Glass Windows: UV [314, 0] ──
-                        // Front windshield (facing work area & blade)
-                        .texOffs(314, 0).addBox(-9.5F, -16.0F, 3.0F, 19.0F, 14.0F, 0.5F)
-                        // Left door glass window
-                        .texOffs(314, 0).addBox(-11.5F, -16.0F, -13.5F, 0.5F, 14.0F, 16.0F)
-                        // Right door glass window
-                        .texOffs(314, 0).addBox(11.0F, -16.0F, -13.5F, 0.5F, 14.0F, 16.0F)
-                        // Rear window
-                        .texOffs(314, 0).addBox(-9.5F, -16.0F, -15.0F, 19.0F, 11.0F, 0.5F)
-
                         // ── Interior Cab Details: UV [124, 234] ──
                         // Operator suspension seat
                         .texOffs(124, 234).addBox(-4.0F, 4.0F, -10.0F, 8.0F, 5.0F, 8.0F)
