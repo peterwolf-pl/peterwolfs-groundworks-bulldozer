@@ -1,5 +1,6 @@
 package com.piotrek.groundworksbulldozer.integration.groundworks;
 
+import com.piotrek.groundworks.api.excavation.ExcavationResult;
 import com.piotrek.groundworks.api.material.GranularMaterial;
 import net.minecraft.core.BlockPos;
 
@@ -12,7 +13,12 @@ public interface IGranularTerrainAccess {
 
     GranularMaterial getMaterial(BlockPos pos);
 
-    int excavateMicrovoxelsAbove(BlockPos pos, double worldCutY, int maxUnits);
+    ExcavationResult excavateMicrovoxelsAbove(
+            BlockPos pos,
+            double worldCutY,
+            int maxUnits,
+            GranularMaterial requiredMaterial
+    );
 
     int fillDepressionBelow(
             BlockPos pos,
