@@ -79,7 +79,7 @@ public final class BulldozerGroundworksGameTest implements FabricClientGameTest 
 
     private static void testBladeCutsRealGroundworksTerrain(ServerLevel level) {
         int z = 12;
-        for (int x = -1; x <= 1; x++) {
+        for (int x = -2; x <= 2; x++) {
             level.setBlock(
                     new BlockPos(x, BASE_Y - 1, z),
                     Blocks.DIRT.defaultBlockState(),
