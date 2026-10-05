@@ -1,9 +1,13 @@
 package com.piotrek.groundworksbulldozer.vehicle;
 
+import com.piotrek.groundworks.api.GroundworksApi;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * Differential crawler track kinematics and terrain-conforming suspension simulation.
@@ -144,14 +148,38 @@ public class BulldozerTrackController {
         this.vehicleRoll = (float) Mth.lerp(0.2D, this.vehicleRoll, targetRoll);
     }
 
-    private double sampleGroundHeight(ServerLevel level, Vec3 pos) {
-        BlockPos bp = BlockPos.containing(pos.x, pos.y + 0.5D, pos.z);
-        for (int dy = 0; dy <= 2; dy++) {
-            BlockPos check = bp.below(dy);
-            if (!level.getBlockState(check).isAir()) {
-                return check.getY() + 1.0D;
+    /**
+     * Samples the exact world-space surface below a track contact point.
+     *
+     * <p>Groundworks terrain may occupy only part of a block, so treating every
+     * non-air block as a full cube makes the dozer float and produces incorrect
+     * pitch/roll. Search several blocks downward, preferring the public
+     * Groundworks surface query and falling back to vanilla collision geometry.
+     */
+    public static double sampleGroundHeight(ServerLevel level, Vec3 pos) {
+        BlockPos start = BlockPos.containing(pos.x, pos.y + 0.8D, pos.z);
+
+        for (int dy = 0; dy <= 4; dy++) {
+            BlockPos check = start.below(dy);
+
+            double surfaceY = GroundworksApi.getSurfaceWorldY(
+                    level, check, pos.x, pos.z);
+            if (Double.isFinite(surfaceY)) {
+                return surfaceY;
+            }
+
+            BlockState state = level.getBlockState(check);
+            if (!state.isAir()) {
+                VoxelShape shape = state.getCollisionShape(level, check);
+                if (!shape.isEmpty()) {
+                    return check.getY() + shape.max(Direction.Axis.Y);
+                }
+                if (state.isSolid()) {
+                    return check.getY() + 1.0D;
+                }
             }
         }
+
         return pos.y;
     }
 
