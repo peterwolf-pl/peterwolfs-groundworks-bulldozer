@@ -7,7 +7,9 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -152,7 +154,61 @@ public final class BulldozerBladeController {
             }
         }
 
-        // ── 2. Lateral Spill ───────────────────────────────────────────────
+        // ── 2. Grade Low Ground / Fill Depressions ──────────────────────────
+        // Material already carried in front of the moldboard is used first to
+        // fill low cells up to the current world-space cutting-edge grade.
+        // This is the actual cut-and-fill grading pass: high ground feeds the
+        // carry buffer, low ground consumes it, and every unit remains conserved.
+        if (!currTransform.isRaised()
+                && currentUnits > 0
+                && currentMaterial != GranularMaterial.EMPTY) {
+
+            Map<BlockPos, Double> gradingTargets = new LinkedHashMap<>();
+            for (Vec3 pt : currEdge) {
+                BlockPos gradePos = BlockPos.containing(
+                        pt.x,
+                        Math.nextDown(pt.y),
+                        pt.z
+                );
+
+                // Do not fill under high ground that was just excavated or that has material above it
+                if (affected.contains(gradePos) || affected.contains(gradePos.above())) {
+                    continue;
+                }
+                if (terrain.getMaterial(gradePos.above()) != GranularMaterial.EMPTY) {
+                    continue;
+                }
+
+                // Multiple edge samples can hit the same block. Use the lowest
+                // blade point in that cell so grading never deposits above steel.
+                gradingTargets.merge(gradePos, pt.y, Math::min);
+            }
+
+            for (Map.Entry<BlockPos, Double> entry : gradingTargets.entrySet()) {
+                if (currentUnits <= 0) {
+                    break;
+                }
+
+                BlockPos gradePos = entry.getKey();
+                double targetWorldY = entry.getValue();
+
+                int deposited = terrain.fillDepressionBelow(
+                        gradePos,
+                        targetWorldY,
+                        currentMaterial,
+                        currentUnits
+                );
+
+                if (deposited > 0) {
+                    totalDeposited += deposited;
+                    currentUnits -= deposited;
+                    affected.add(gradePos);
+                    terrain.markSimulate(gradePos);
+                }
+            }
+        }
+
+        // ── 3. Lateral Spill ───────────────────────────────────────────────
         // The visible carried surcharge represents the rolling load in front of the moldboard.
         // Keep that load intact until the blade is physically full; only then can it escape
         // around the two wings.
@@ -187,9 +243,7 @@ public final class BulldozerBladeController {
         GranularMaterial resultMaterial = currentMaterial;
         if (currentUnits <= 0) {
             currentUnits = 0;
-            if (totalExcavated == 0 && totalDeposited == 0) {
-                resultMaterial = GranularMaterial.EMPTY;
-            }
+            resultMaterial = GranularMaterial.EMPTY;
         }
 
         boolean isPushing = totalExcavated > 0 || currentUnits > 32;

@@ -92,15 +92,23 @@ class VolumeConservationTest {
     void testNoSpillBeforeBladeIsFull() {
         TestGranularTerrain terrain = new TestGranularTerrain();
         int carried = BulldozerBladeController.MAX_BLADE_CAPACITY - 1;
+
+        // Level ground under the full blade width. There is no depression to fill,
+        // so a non-full blade must retain its load instead of spilling.
+        for (int x = -2; x <= 2; x++) {
+            terrain.createFullCell(new BlockPos(x, 64, 12), GranularMaterialRegistry.SAND);
+        }
+        int initialWorldUnits = terrain.countTotalWorldUnits();
+
         BladeTransform prev = BladeTransform.compute(new Vec3(0, 65, 10.0), 0, 0, 0, 0.0F, 0.0F);
         BladeTransform curr = BladeTransform.compute(new Vec3(0, 65, 10.5), 0, 0, 0, 0.0F, 0.0F);
 
         BladeTickResult result = BulldozerBladeController.tick(
                 terrain, prev, curr, carried, GranularMaterialRegistry.SAND);
 
-        assertEquals(0, result.unitsDeposited(), "A non-full blade must not spill or drop a forward berm");
+        assertEquals(0, result.unitsDeposited(), "A non-full blade on level grade must not spill");
         assertEquals(carried, result.carriedUnitsAfter(), "All material must remain pushed ahead of the blade");
-        assertEquals(0, terrain.countTotalWorldUnits());
+        assertEquals(initialWorldUnits, terrain.countTotalWorldUnits());
     }
 
     @Test
@@ -109,6 +117,14 @@ class VolumeConservationTest {
         TestGranularTerrain terrain = new TestGranularTerrain();
         int initialBladeUnits = BulldozerBladeController.MAX_BLADE_CAPACITY;
         GranularMaterial initialMaterial = GranularMaterialRegistry.SAND;
+
+        // Full level ground prevents the new grading pass from consuming the
+        // blade load before the lateral-spill rule is evaluated.
+        for (int x = -2; x <= 2; x++) {
+            terrain.createFullCell(new BlockPos(x, 64, 12), initialMaterial);
+        }
+        int initialWorldUnits = terrain.countTotalWorldUnits();
+
         BladeTransform prev = BladeTransform.compute(new Vec3(0, 65, 10.0), 0, 0, 0, 0.0F, 0.0F);
         BladeTransform curr = BladeTransform.compute(new Vec3(0, 65, 10.5), 0, 0, 0, 0.0F, 0.0F);
 
@@ -116,9 +132,9 @@ class VolumeConservationTest {
                 terrain, prev, curr, initialBladeUnits, initialMaterial);
 
         int worldUnitsAfter = terrain.countTotalWorldUnits();
-        assertEquals(initialBladeUnits, worldUnitsAfter + result.carriedUnitsAfter(),
+        assertEquals(initialWorldUnits + initialBladeUnits, worldUnitsAfter + result.carriedUnitsAfter(),
                 "Side spill plus material still ahead of the blade must conserve volume");
-        assertTrue(worldUnitsAfter > 0, "A full blade must spill material around its wings");
+        assertTrue(worldUnitsAfter > initialWorldUnits, "A full blade must spill material around its wings");
         assertTrue(result.carriedUnitsAfter() < initialBladeUnits);
         assertTrue(!terrain.simulatedPositions().isEmpty(), "Side-spill positions must relax");
     }
