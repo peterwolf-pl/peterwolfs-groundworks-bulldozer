@@ -37,13 +37,22 @@ public class GroundworksBulldozerAdapter implements IGranularTerrainAccess {
     }
 
     @Override
-    public int excavateMicrovoxelsAbove(BlockPos pos, double worldCutY, int maxUnits) {
+    public ExcavationResult excavateMicrovoxelsAbove(
+            BlockPos pos,
+            double worldCutY,
+            int maxUnits,
+            GranularMaterial requiredMaterial
+    ) {
         if (maxUnits <= 0) {
-            return 0;
+            return ExcavationResult.NONE;
         }
-        ExcavationResult result =
-                GroundworksApi.excavateAbove(level, pos, worldCutY, maxUnits);
-        return result.unitsRemoved();
+        return GroundworksApi.excavateAbove(
+                level,
+                pos,
+                worldCutY,
+                maxUnits,
+                requiredMaterial
+        );
     }
 
     @Override
