@@ -171,6 +171,14 @@ public final class BulldozerBladeController {
                         pt.z
                 );
 
+                // Do not fill under high ground that was just excavated or that has material above it
+                if (affected.contains(gradePos) || affected.contains(gradePos.above())) {
+                    continue;
+                }
+                if (terrain.getMaterial(gradePos.above()) != GranularMaterial.EMPTY) {
+                    continue;
+                }
+
                 // Multiple edge samples can hit the same block. Use the lowest
                 // blade point in that cell so grading never deposits above steel.
                 gradingTargets.merge(gradePos, pt.y, Math::min);

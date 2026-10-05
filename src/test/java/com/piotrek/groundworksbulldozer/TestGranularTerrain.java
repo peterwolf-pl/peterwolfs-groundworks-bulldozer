@@ -130,11 +130,15 @@ public class TestGranularTerrain implements IGranularTerrainAccess {
                 );
         if (fullLayers <= 0) return 0;
 
-        GranularCell cell = cells.computeIfAbsent(pos.immutable(), p -> {
-            GranularCell c = GranularCell.empty();
-            c.setMaterialId(material.id());
-            return c;
-        });
+        GranularCell cell = cells.get(pos);
+        if (cell == null) {
+            if (pos.getY() < 65 || convertibleBlocks.containsKey(pos)) {
+                return 0;
+            }
+            cell = GranularCell.empty();
+            cell.setMaterialId(material.id());
+            cells.put(pos.immutable(), cell);
+        }
 
         if (cell.isEmpty()) {
             cell.setMaterialId(material.id());
