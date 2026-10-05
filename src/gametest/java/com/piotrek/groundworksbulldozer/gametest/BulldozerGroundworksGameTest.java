@@ -1,6 +1,7 @@
 package com.piotrek.groundworksbulldozer.gametest;
 
 import com.piotrek.groundworks.api.GroundworksApi;
+import com.piotrek.groundworks.api.material.GranularMaterialRegistry;
 import com.piotrek.groundworksbulldozer.blade.BladeTransform;
 import com.piotrek.groundworksbulldozer.blade.BulldozerBladeController;
 import com.piotrek.groundworksbulldozer.integration.groundworks.GroundworksBulldozerAdapter;
@@ -37,6 +38,7 @@ public final class BulldozerGroundworksGameTest implements FabricClientGameTest 
                 ServerLevel level = minecraftServer.overworld();
                 testTrackSamplingUsesPartialGroundworksSurface(level);
                 testBladeCutsRealGroundworksTerrain(level);
+                testBladeRejectsForeignMaterial(level);
             });
 
             context.waitTicks(5);
@@ -75,6 +77,58 @@ public final class BulldozerGroundworksGameTest implements FabricClientGameTest 
                     "Front tracks are higher than rear tracks, expected nose-up pitch; got "
                             + state.pitch());
         }
+    }
+
+    private static void testBladeRejectsForeignMaterial(ServerLevel level) {
+        int z = 20;
+        int initialSandUnits = 0;
+        for (int x = -2; x <= 2; x++) {
+            BlockPos pos = new BlockPos(x, BASE_Y - 1, z);
+            level.setBlock(pos, Blocks.SAND.defaultBlockState(), 3);
+            initialSandUnits += effectiveUnits(level, pos);
+        }
+
+        BladeTransform previous = BladeTransform.compute(
+                new Vec3(0.5D, BASE_Y, z - 2.45D),
+                0.0F, 0.0F, 0.0F, -0.20F, -2.5F);
+        BladeTransform current = BladeTransform.compute(
+                new Vec3(0.5D, BASE_Y, z - 2.10D),
+                0.0F, 0.0F, 0.0F, -0.20F, -2.5F);
+
+        var result = BulldozerBladeController.tick(
+                GroundworksBulldozerAdapter.of(level),
+                previous,
+                current,
+                200,
+                GranularMaterialRegistry.DIRT
+        );
+
+        int sandUnitsAfter = 0;
+        for (int x = -2; x <= 2; x++) {
+            sandUnitsAfter += effectiveUnits(level, new BlockPos(x, BASE_Y - 1, z));
+        }
+
+        if (result.unitsExcavated() != 0) {
+            throw new AssertionError(
+                    "Dirt-loaded production blade excavated foreign sand: "
+                            + result.unitsExcavated());
+        }
+        if (sandUnitsAfter != initialSandUnits) {
+            throw new AssertionError(
+                    "Foreign sand changed under dirt-loaded blade: before="
+                            + initialSandUnits + ", after=" + sandUnitsAfter);
+        }
+        if (result.carriedMaterialAfter().id() != GranularMaterialRegistry.DIRT.id()) {
+            throw new AssertionError("Bulldozer carry material changed away from dirt");
+        }
+    }
+
+    private static int effectiveUnits(ServerLevel level, BlockPos pos) {
+        var cell = GroundworksApi.queryCell(level, pos);
+        if (cell != null) {
+            return cell.unitCount();
+        }
+        return GroundworksApi.getMaterial(level, pos) != null ? 512 : 0;
     }
 
     private static void testBladeCutsRealGroundworksTerrain(ServerLevel level) {
