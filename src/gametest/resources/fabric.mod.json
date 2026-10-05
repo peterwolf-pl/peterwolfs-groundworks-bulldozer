@@ -6,7 +6,8 @@
   "environment": "client",
   "entrypoints": {
     "fabric-client-gametest": [
-      "com.piotrek.groundworksbulldozer.gametest.BulldozerVisualGameTest"
+      "com.piotrek.groundworksbulldozer.gametest.BulldozerVisualGameTest",
+      "com.piotrek.groundworksbulldozer.gametest.BulldozerGroundworksGameTest"
     ]
   },
   "depends": {
