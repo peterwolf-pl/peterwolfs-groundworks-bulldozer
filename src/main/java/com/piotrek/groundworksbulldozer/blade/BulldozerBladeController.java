@@ -1,5 +1,6 @@
 package com.piotrek.groundworksbulldozer.blade;
 
+import com.piotrek.groundworks.api.excavation.ExcavationResult;
 import com.piotrek.groundworks.api.material.GranularMaterial;
 import com.piotrek.groundworksbulldozer.integration.groundworks.IGranularTerrainAccess;
 import net.minecraft.core.BlockPos;
@@ -135,16 +136,44 @@ public final class BulldozerBladeController {
                         int room = MAX_BLADE_CAPACITY - currentUnits;
                         if (room > 0) {
                             GranularMaterial sourceMaterial = terrain.getMaterial(targetPos);
+                            if (sourceMaterial == GranularMaterial.EMPTY) {
+                                continue;
+                            }
+
+                            GranularMaterial requiredMaterial =
+                                    currentMaterial == GranularMaterial.EMPTY
+                                            ? sourceMaterial
+                                            : currentMaterial;
+
+                            // A blade carry buffer is single-material. Foreign terrain
+                            // remains untouched until the current load is deposited.
+                            if (sourceMaterial.id() != requiredMaterial.id()) {
+                                continue;
+                            }
+
                             int toRemove = Math.min(room, 128);
-                            int removed = terrain.excavateMicrovoxelsAbove(targetPos, pt.y, toRemove);
-                            if (removed > 0) {
+                            ExcavationResult excavation = terrain.excavateMicrovoxelsAbove(
+                                    targetPos,
+                                    pt.y,
+                                    toRemove,
+                                    requiredMaterial
+                            );
+                            if (excavation.success()) {
+                                if (excavation.material().id() != requiredMaterial.id()) {
+                                    throw new IllegalStateException(
+                                            "Groundworks material filter violation: required="
+                                                    + requiredMaterial.name()
+                                                    + ", removed=" + excavation.material().name()
+                                    );
+                                }
+
+                                int removed = excavation.unitsRemoved();
                                 totalExcavated += removed;
                                 currentUnits += removed;
                                 affected.add(targetPos);
 
-                                if (currentMaterial == GranularMaterial.EMPTY
-                                        && sourceMaterial != GranularMaterial.EMPTY) {
-                                    currentMaterial = sourceMaterial;
+                                if (currentMaterial == GranularMaterial.EMPTY) {
+                                    currentMaterial = excavation.material();
                                 }
                             }
                         }
