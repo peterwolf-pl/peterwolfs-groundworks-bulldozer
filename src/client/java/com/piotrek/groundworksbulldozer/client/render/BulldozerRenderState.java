@@ -16,6 +16,8 @@ public class BulldozerRenderState extends EntityRenderState {
 
     public float leftTrackSpeed;
     public float rightTrackSpeed;
+    public float leftTrackTravel;
+    public float rightTrackTravel;
 
     public int carriedMaterialId;
     public int carriedUnits;

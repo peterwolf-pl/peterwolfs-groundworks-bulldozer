@@ -14,6 +14,9 @@ import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 
+import java.util.Map;
+import java.util.WeakHashMap;
+
 /**
  * 26.3 entity renderer for the tracked industrial bulldozer.
  */
@@ -22,6 +25,13 @@ public class BulldozerRenderer extends EntityRenderer<GroundworksBulldozerEntity
     public static final Identifier TEXTURE = GroundworksBulldozerMod.id("textures/entity/bulldozer.png");
 
     private final BulldozerModel model;
+    private final Map<GroundworksBulldozerEntity, TrackAnimationState> trackAnimations = new WeakHashMap<>();
+
+    private static final class TrackAnimationState {
+        float lastRenderTick = Float.NaN;
+        float leftTravel;
+        float rightTravel;
+    }
 
     public BulldozerRenderer(EntityRendererProvider.Context context) {
         super(context);
@@ -48,6 +58,25 @@ public class BulldozerRenderer extends EntityRenderer<GroundworksBulldozerEntity
         state.leftTrackSpeed = entity.getTrackLeftSpeed();
         state.rightTrackSpeed = entity.getTrackRightSpeed();
 
+        // Integrate visual crawler travel on the client so sprockets, idlers, rollers and
+        // moving grouser pads keep a continuous phase while speed changes. A WeakHashMap
+        // prevents stale entity animation state from being retained after despawn.
+        TrackAnimationState trackAnimation =
+                this.trackAnimations.computeIfAbsent(entity, ignored -> new TrackAnimationState());
+        float renderTick = entity.tickCount + partialTick;
+        if (Float.isNaN(trackAnimation.lastRenderTick)) {
+            trackAnimation.lastRenderTick = renderTick;
+        } else {
+            float deltaTicks = Math.max(0.0F, Math.min(5.0F, renderTick - trackAnimation.lastRenderTick));
+            trackAnimation.leftTravel += state.leftTrackSpeed * 16.0F * deltaTicks;
+            trackAnimation.rightTravel += state.rightTrackSpeed * 16.0F * deltaTicks;
+            trackAnimation.leftTravel = wrapTrackTravel(trackAnimation.leftTravel);
+            trackAnimation.rightTravel = wrapTrackTravel(trackAnimation.rightTravel);
+            trackAnimation.lastRenderTick = renderTick;
+        }
+        state.leftTrackTravel = trackAnimation.leftTravel;
+        state.rightTrackTravel = trackAnimation.rightTravel;
+
         state.carriedMaterialId = entity.getCarriedMaterialId();
         state.carriedUnits = entity.getCarriedUnits();
         state.fillRatio = (float) entity.getCarriedUnits() / (float) com.piotrek.groundworksbulldozer.blade.BulldozerBladeController.MAX_BLADE_CAPACITY;
@@ -57,6 +86,14 @@ public class BulldozerRenderer extends EntityRenderer<GroundworksBulldozerEntity
 
         state.beaconSpin = (entity.tickCount + partialTick) * 0.75F;
         state.beaconFlash = state.isEngineRunning && ((entity.tickCount / 4) % 2 == 0);
+    }
+
+    private static float wrapTrackTravel(float travel) {
+        float loop = BulldozerModel.TRACK_LOOP_LENGTH;
+        if (travel > loop || travel < -loop) {
+            travel %= loop;
+        }
+        return travel;
     }
 
     @Override

@@ -2,7 +2,18 @@
   "engine_loop": {
     "subtitle": "subtitles.pw_groundworks_bulldozer.engine_loop",
     "sounds": [
-      "pw_groundworks_bulldozer:engine_loop"
+      {
+        "name": "pw_groundworks_bulldozer:engine_loop",
+        "attenuation_distance": 14
+      }
+    ]
+  },
+  "engine_load": {
+    "sounds": [
+      {
+        "name": "pw_groundworks_bulldozer:engine_load",
+        "attenuation_distance": 14
+      }
     ]
   }
 }
