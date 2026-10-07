@@ -1,6 +1,7 @@
 package com.piotrek.groundworksbulldozer.client.render;
 
 import com.piotrek.groundworksbulldozer.GroundworksBulldozerMod;
+import com.piotrek.groundworksbulldozer.blade.BladeTransform;
 import com.piotrek.groundworksbulldozer.entity.GroundworksBulldozerEntity;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
@@ -11,13 +12,26 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.resources.Identifier;
 
 /**
- * In-cab instrument HUD displayed while operating the bulldozer.
+ * High-contrast in-cab instrument HUD displayed while operating the bulldozer.
  *
- * <p>Shows real-time blade elevation, carried volume, and control status.
+ * <p>Shows blade position and true cutting-edge clearance, carried volume,
+ * machine attitude and control hints.
  */
 public class BulldozerHudOverlay implements HudElement {
 
     public static final Identifier ID = GroundworksBulldozerMod.id("hud_overlay");
+
+    private static final int PANEL_BG = 0xE6000000;
+    private static final int PANEL_BORDER = 0xFFFFB000;
+    private static final int TEXT_PRIMARY = 0xFFFFFFFF;
+    private static final int TEXT_SECONDARY = 0xFFE6E6E6;
+    private static final int TEXT_MUTED = 0xFFB8B8B8;
+    private static final int TEXT_AMBER = 0xFFFFC247;
+    private static final int TEXT_GREEN = 0xFF72FF72;
+    private static final int TEXT_RED = 0xFFFF6868;
+    private static final int BAR_BG = 0xFF242424;
+    private static final int BAR_FILL = 0xFF25B7FF;
+    private static final int BAR_FULL = 0xFFFF6A3D;
 
     public static void register() {
         HudElementRegistry.addLast(ID, new BulldozerHudOverlay());
@@ -33,62 +47,156 @@ public class BulldozerHudOverlay implements HudElement {
         }
 
         Font font = client.font;
-        int x = 10;
-        int y = 10;
-        int width = 275;
-        int height = 74;
+        int x = 12;
+        int y = 12;
+        int width = 340;
+        int height = 96;
 
-        // Semi-transparent panel
-        extractor.fill(x - 4, y - 4, x + width, y + height, 0x88000000);
-        extractor.outline(x - 4, y - 4, width + 4, height + 4, 0xFFFFAA00);
+        // Opaque high-contrast background. The old 0x88 alpha let the world texture
+        // bleed through the glyphs and made the small Minecraft font hard to read.
+        extractor.fill(x - 6, y - 6, x + width, y + height, PANEL_BG);
+        extractor.outline(x - 6, y - 6, width + 6, height + 6, PANEL_BORDER);
 
         // Header
-        extractor.text(font, "§6§lPeterwolf's Groundworks Bulldozer", x, y, 0xFFFFFF, true);
+        extractor.text(font, "PETERWOLF'S GROUNDWORKS BULLDOZER", x, y, TEXT_AMBER, true);
 
-        // Blade Height & Mode Indicator
-        float h = dozer.getBladeHeight();
+        float bladeHeight = dozer.getBladeHeight();
         String heightStatus;
-        if (h > 0.05F) {
-            heightStatus = "§a§lPODNIESIONY (Transport)";
-        } else if (h >= -0.15F) {
-            heightStatus = "§e§lRÓWNANIE (Grading)";
+        int heightColor;
+        if (bladeHeight > 0.05F) {
+            heightStatus = "PODNIESIONY / TRANSPORT";
+            heightColor = TEXT_GREEN;
+        } else if (bladeHeight >= -0.15F) {
+            heightStatus = "RÓWNANIE";
+            heightColor = TEXT_AMBER;
         } else {
-            heightStatus = "§c§lGŁĘBOKIE SKRAWANIE (Cut)";
+            heightStatus = "GŁĘBOKIE SKRAWANIE";
+            heightColor = TEXT_RED;
         }
-        extractor.text(font, String.format("Lemiesz [↑/↓]: §f%.2f m §7(%s§7)", h, heightStatus), x, y + 11, 0xFFFFFF, true);
 
-        // Status & Pitch/Roll
-        String status = dozer.isPushing() ? "§e§lSPYCHANIE TERENU" : "§7GOTOWA";
-        extractor.text(font, "Status: " + status, x + 160, y + 11, 0xCCCCCC, true);
+        extractor.text(
+                font,
+                String.format("Lemiesz [↑/↓]: %.2f m", bladeHeight),
+                x,
+                y + 13,
+                TEXT_PRIMARY,
+                true
+        );
+        extractor.text(font, heightStatus, x + 155, y + 13, heightColor, true);
 
-        // Carried Material & Volume
+        // Compute the actual lowest point of the cutting edge from the synchronized
+        // vehicle pitch/roll and blade pose. BladeTransform treats entity Y as the
+        // local ground plane under the machine, so this value remains useful on slopes.
+        BladeTransform blade = BladeTransform.compute(
+                dozer.position(),
+                dozer.getYRot(),
+                dozer.getVehiclePitch(),
+                dozer.getVehicleRoll(),
+                dozer.getBladeHeight(),
+                dozer.getBladeAngle()
+        );
+
+        double lowestEdgeY = blade.cuttingEdgePoints().stream()
+                .mapToDouble(point -> point.y)
+                .min()
+                .orElse(blade.cuttingEdgeCenter().y);
+        double clearance = lowestEdgeY - dozer.getY();
+
+        String clearanceText;
+        int clearanceColor;
+        if (clearance >= 0.0D) {
+            clearanceText = String.format("Dolna krawędź nad gruntem: +%.2f m", clearance);
+            clearanceColor = clearance > 0.05D ? TEXT_GREEN : TEXT_AMBER;
+        } else {
+            clearanceText = String.format("Dolna krawędź poniżej gruntu: %.2f m", clearance);
+            clearanceColor = TEXT_RED;
+        }
+        extractor.text(font, clearanceText, x, y + 25, clearanceColor, true);
+
+        String status = dozer.isPushing() ? "SPYCHANIE TERENU" : "GOTOWA";
+        extractor.text(
+                font,
+                "Status: " + status,
+                x + 220,
+                y + 25,
+                dozer.isPushing() ? TEXT_AMBER : TEXT_GREEN,
+                true
+        );
+
+        // Carried material & volume
         String matName = dozer.getCarriedMaterialId() > 0 && dozer.getCarriedMaterial() != null
                 ? dozer.getCarriedMaterial().name().toUpperCase()
                 : "BRAK";
         int units = dozer.getCarriedUnits();
         int cap = com.piotrek.groundworksbulldozer.blade.BulldozerBladeController.MAX_BLADE_CAPACITY;
         double m3 = (double) units / 512.0D;
-        extractor.text(font, String.format("Urobek w lemieszu: §f%s §7(%d/%d u = %.3f m³)", matName, units, cap, m3), x, y + 22, 0xCCCCCC, true);
 
-        // Volume Progress Bar
-        int barWidth = 160;
-        int barHeight = 4;
-        int barY = y + 33;
+        extractor.text(
+                font,
+                String.format("Urobek: %s   %d/%d u   %.3f m³", matName, units, cap, m3),
+                x,
+                y + 38,
+                TEXT_SECONDARY,
+                true
+        );
+
+        // Volume progress bar
+        int barWidth = 200;
+        int barHeight = 6;
+        int barY = y + 51;
         float ratio = (float) units / (float) cap;
-        extractor.fill(x, barY, x + barWidth, barY + barHeight, 0xFF333333);
+
+        extractor.fill(x, barY, x + barWidth, barY + barHeight, BAR_BG);
         int fillWidth = Math.round(barWidth * Math.min(1.0F, ratio));
         if (fillWidth > 0) {
-            extractor.fill(x, barY, x + fillWidth, barY + barHeight, ratio > 0.8F ? 0xFFFF4400 : 0xFF00AAFF);
+            extractor.fill(
+                    x,
+                    barY,
+                    x + fillWidth,
+                    barY + barHeight,
+                    ratio > 0.8F ? BAR_FULL : BAR_FILL
+            );
         }
-        extractor.text(font, String.format("%.0f%%", ratio * 100.0F), x + barWidth + 6, barY - 2, 0xAAAAAA, true);
+        extractor.text(
+                font,
+                String.format("%.0f%%", ratio * 100.0F),
+                x + barWidth + 8,
+                barY - 2,
+                TEXT_PRIMARY,
+                true
+        );
 
-        // Machine Attitude & Orientation
-        extractor.text(font, String.format("Pochylenie wzdłużne: §f%.1f°§7 | Boczne: §f%.1f°§7 | Kąt lemiesza: §f%.1f°",
-                dozer.getVehiclePitch(), dozer.getVehicleRoll(), dozer.getBladeAngle()),
-                x, y + 43, 0xAAAAAA, true);
+        // Machine attitude
+        extractor.text(
+                font,
+                String.format(
+                        "Pochylenie: %.1f°   Boczne: %.1f°   Kąt lemiesza: %.1f°",
+                        dozer.getVehiclePitch(),
+                        dozer.getVehicleRoll(),
+                        dozer.getBladeAngle()
+                ),
+                x,
+                y + 63,
+                TEXT_SECONDARY,
+                true
+        );
 
-        // Controls Hint
-        extractor.text(font, "§f[W/S]: §aJazda Przód/Tył §7| §f[A/D]: §eSkręt gąsienicami w miejscu", x, y + 54, 0xDDDDDD, true);
-        extractor.text(font, "§8[↑/↓] Podnoszenie/Opuszczanie lemiesza | [←/→] Przechył", x, y + 64, 0x888888, true);
+        // Controls
+        extractor.text(
+                font,
+                "[W/S] Jazda   [A/D] Skręt   [↑/↓] Lemiesz góra/dół",
+                x,
+                y + 76,
+                TEXT_PRIMARY,
+                true
+        );
+        extractor.text(
+                font,
+                "[←/→] Przechył lemiesza",
+                x,
+                y + 87,
+                TEXT_MUTED,
+                true
+        );
     }
 }
