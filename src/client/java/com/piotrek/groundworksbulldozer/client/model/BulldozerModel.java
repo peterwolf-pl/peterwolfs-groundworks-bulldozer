@@ -269,10 +269,10 @@ public class BulldozerModel extends EntityModel<BulldozerRenderState> {
         mainBody.addOrReplaceChild(
                 "hydraulic_mounts",
                 CubeListBuilder.create()
-                        .texOffs(184, 144).addBox(-15.0F, 2.0F, 7.0F, 7.0F, 6.0F, 6.0F)
-                        .texOffs(184, 144).addBox(8.0F, 2.0F, 7.0F, 7.0F, 6.0F, 6.0F)
-                        .texOffs(330, 90).addBox(-12.8F, 3.6F, 5.8F, 2.6F, 2.6F, 8.4F)
-                        .texOffs(330, 90).addBox(10.2F, 3.6F, 5.8F, 2.6F, 2.6F, 8.4F),
+                        .texOffs(184, 144).addBox(-25.5F, 2.0F, 7.0F, 6.0F, 6.0F, 6.0F)
+                        .texOffs(184, 144).addBox(19.5F, 2.0F, 7.0F, 6.0F, 6.0F, 6.0F)
+                        .texOffs(330, 90).addBox(-23.8F, 3.6F, 5.8F, 2.6F, 2.6F, 8.4F)
+                        .texOffs(330, 90).addBox(21.2F, 3.6F, 5.8F, 2.6F, 2.6F, 8.4F),
                 PartPose.offset(0.0F, 0.0F, 0.0F)
         );
 
@@ -285,7 +285,7 @@ public class BulldozerModel extends EntityModel<BulldozerRenderState> {
                         .texOffs(294, 90).addBox(-1.8F, -1.8F, 0.0F, 3.6F, 3.6F, 10.0F)
                         // Front gland
                         .texOffs(294, 90).addBox(-2.1F, -2.1F, 8.4F, 4.2F, 4.2F, 2.2F),
-                PartPose.offset(-11.5F, CYLINDER_BASE_Y, CYLINDER_BASE_Z)
+                PartPose.offset(-22.5F, CYLINDER_BASE_Y, CYLINDER_BASE_Z)
         );
         leftCylinder.addOrReplaceChild(
                 "rod",
@@ -300,7 +300,7 @@ public class BulldozerModel extends EntityModel<BulldozerRenderState> {
                         .texOffs(184, 144).addBox(-2.3F, -2.3F, -2.0F, 4.6F, 4.6F, 4.0F)
                         .texOffs(294, 90).addBox(-1.8F, -1.8F, 0.0F, 3.6F, 3.6F, 10.0F)
                         .texOffs(294, 90).addBox(-2.1F, -2.1F, 8.4F, 4.2F, 4.2F, 2.2F),
-                PartPose.offset(11.5F, CYLINDER_BASE_Y, CYLINDER_BASE_Z)
+                PartPose.offset(22.5F, CYLINDER_BASE_Y, CYLINDER_BASE_Z)
         );
         rightCylinder.addOrReplaceChild(
                 "rod",
@@ -316,21 +316,21 @@ public class BulldozerModel extends EntityModel<BulldozerRenderState> {
                         // Extra-wide C-frame runs completely outside the crawler envelope.
                         // Tracks span roughly X=-20..-11 and X=11..20, so the arms begin
                         // beyond X=22 with a visible air gap instead of intersecting them.
-                        .texOffs(184, 144).addBox(-27.0F, -2.0F, -2.0F, 4.0F, 4.0F, 36.0F)
-                        .texOffs(184, 144).addBox(23.0F, -2.0F, -2.0F, 4.0F, 4.0F, 36.0F)
+                        .texOffs(184, 144).addBox(-24.5F, -2.0F, -2.0F, 3.0F, 4.0F, 36.0F)
+                        .texOffs(184, 144).addBox(21.5F, -2.0F, -2.0F, 3.0F, 4.0F, 36.0F)
                         // Outboard rear pivot housings.
-                        .texOffs(184, 144).addBox(-28.5F, -4.0F, -5.0F, 6.0F, 8.0F, 8.0F)
-                        .texOffs(184, 144).addBox(22.5F, -4.0F, -5.0F, 6.0F, 8.0F, 8.0F)
+                        .texOffs(184, 144).addBox(-25.5F, -4.0F, -5.0F, 4.0F, 8.0F, 8.0F)
+                        .texOffs(184, 144).addBox(21.5F, -4.0F, -5.0F, 4.0F, 8.0F, 8.0F)
                         // Reinforcement gussets near the blade end.
-                        .texOffs(184, 144).addBox(-28.0F, -5.0F, 24.0F, 5.5F, 3.0F, 9.0F)
-                        .texOffs(184, 144).addBox(22.5F, -5.0F, 24.0F, 5.5F, 3.0F, 9.0F)
+                        .texOffs(184, 144).addBox(-25.0F, -5.0F, 24.0F, 4.0F, 3.0F, 9.0F)
+                        .texOffs(184, 144).addBox(21.0F, -5.0F, 24.0F, 4.0F, 3.0F, 9.0F)
                         // Hydraulic rod clevis mounts stay outboard with the C-frame.
-                        .texOffs(330, 90).addBox(-27.0F, -4.0F, 19.0F, 4.5F, 8.0F, 6.0F)
-                        .texOffs(330, 90).addBox(22.5F, -4.0F, 19.0F, 4.5F, 8.0F, 6.0F)
+                        .texOffs(330, 90).addBox(-24.8F, -4.0F, 19.0F, 3.6F, 8.0F, 6.0F)
+                        .texOffs(330, 90).addBox(21.2F, -4.0F, 19.0F, 3.6F, 8.0F, 6.0F)
                         // Cross-ties are pushed ahead of the track nose so they no longer
                         // pass through the front sprocket silhouette.
-                        .texOffs(184, 144).addBox(-24.0F, -2.0F, 28.0F, 48.0F, 4.0F, 4.0F)
-                        .texOffs(184, 144).addBox(-24.0F, -2.0F, 32.0F, 48.0F, 4.0F, 4.0F),
+                        .texOffs(184, 144).addBox(-22.5F, -2.0F, 28.0F, 45.0F, 4.0F, 4.0F)
+                        .texOffs(184, 144).addBox(-22.5F, -2.0F, 32.0F, 45.0F, 4.0F, 4.0F),
                 PartPose.offset(0.0F, 15.0F, 0.0F)
         );
 
@@ -354,10 +354,10 @@ public class BulldozerModel extends EntityModel<BulldozerRenderState> {
                         .texOffs(0, 144).addBox(-1.5F, -7.0F, -4.5F, 3.0F, 13.0F, 4.5F)
                         .texOffs(0, 144).addBox(13.0F, -7.0F, -4.5F, 3.0F, 13.0F, 4.5F)
                         // Left/right blade mounting ears and pivot blocks
-                        .texOffs(184, 144).addBox(-19.0F, -4.5F, -8.0F, 7.0F, 9.0F, 4.0F)
-                        .texOffs(184, 144).addBox(12.0F, -4.5F, -8.0F, 7.0F, 9.0F, 4.0F)
-                        .texOffs(330, 90).addBox(-17.5F, -2.0F, -9.0F, 4.0F, 4.0F, 6.0F)
-                        .texOffs(330, 90).addBox(13.5F, -2.0F, -9.0F, 4.0F, 4.0F, 6.0F),
+                        .texOffs(184, 144).addBox(-24.0F, -4.5F, -8.0F, 5.0F, 9.0F, 4.0F)
+                        .texOffs(184, 144).addBox(19.0F, -4.5F, -8.0F, 5.0F, 9.0F, 4.0F)
+                        .texOffs(330, 90).addBox(-23.0F, -2.0F, -9.0F, 3.0F, 4.0F, 6.0F)
+                        .texOffs(330, 90).addBox(20.0F, -2.0F, -9.0F, 3.0F, 4.0F, 6.0F),
                 PartPose.offset(0.0F, 0.0F, 34.0F)
         );
 
