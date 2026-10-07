@@ -32,7 +32,16 @@ public class BulldozerModel extends EntityModel<BulldozerRenderState> {
     private final ModelPart carriedMaterial;
     private final ModelPart leftCylinder;
     private final ModelPart rightCylinder;
+    private final ModelPart leftCylinderRod;
+    private final ModelPart rightCylinderRod;
     private final ModelPart beaconReflector;
+
+    private static final float PUSH_ARM_PIVOT_Y = 15.0F;
+    private static final float CYLINDER_BASE_Y = 5.0F;
+    private static final float CYLINDER_BASE_Z = 10.0F;
+    private static final float CYLINDER_ARM_ATTACH_Z = 22.0F;
+    private static final float CYLINDER_ROD_START_Z = 8.5F;
+    private static final float CYLINDER_ROD_MODEL_LENGTH = 12.0F;
 
     public BulldozerModel(ModelPart root) {
         super(root);
@@ -43,6 +52,8 @@ public class BulldozerModel extends EntityModel<BulldozerRenderState> {
         this.carriedMaterial = this.blade.getChild("carried_material");
         this.leftCylinder = this.mainBody.getChild("left_cylinder");
         this.rightCylinder = this.mainBody.getChild("right_cylinder");
+        this.leftCylinderRod = this.leftCylinder.getChild("rod");
+        this.rightCylinderRod = this.rightCylinder.getChild("rod");
         this.beaconReflector = this.mainBody.getChild("beacon_base").getChild("beacon_reflector");
     }
 
@@ -157,34 +168,70 @@ public class BulldozerModel extends EntityModel<BulldozerRenderState> {
                 PartPose.offset(0.0F, 0.0F, 0.0F)
         );
 
-        // ── 3. Hydraulic Lift Cylinders (Angled from radiator to push arms) ──
+        // ── 3. Hydraulic Lift Cylinders & Fixed Trunnion Mounts ─────────
+        // Fixed chassis-side trunnion blocks. These stay attached to the tractor body
+        // while the complete cylinder assemblies rotate around their pivot pins.
         mainBody.addOrReplaceChild(
-                "left_cylinder",
+                "hydraulic_mounts",
                 CubeListBuilder.create()
-                        // Cylinder outer barrel: UV [294, 90]
-                        .texOffs(294, 90).addBox(-1.5F, -1.5F, 0.0F, 3.0F, 3.0F, 14.0F)
-                        // Chrome hydraulic ram: UV [330, 90]
-                        .texOffs(330, 90).addBox(-1.0F, -1.0F, 12.0F, 2.0F, 2.0F, 10.0F),
-                PartPose.offset(-11.5F, 4.0F, 18.0F)
+                        .texOffs(184, 144).addBox(-15.0F, 2.0F, 7.0F, 7.0F, 6.0F, 6.0F)
+                        .texOffs(184, 144).addBox(8.0F, 2.0F, 7.0F, 7.0F, 6.0F, 6.0F)
+                        .texOffs(330, 90).addBox(-12.8F, 3.6F, 5.8F, 2.6F, 2.6F, 8.4F)
+                        .texOffs(330, 90).addBox(10.2F, 3.6F, 5.8F, 2.6F, 2.6F, 8.4F),
+                PartPose.offset(0.0F, 0.0F, 0.0F)
         );
 
-        mainBody.addOrReplaceChild(
+        PartDefinition leftCylinder = mainBody.addOrReplaceChild(
+                "left_cylinder",
+                CubeListBuilder.create()
+                        // Pivot eye / rear clevis
+                        .texOffs(184, 144).addBox(-2.3F, -2.3F, -2.0F, 4.6F, 4.6F, 4.0F)
+                        // Main hydraulic barrel
+                        .texOffs(294, 90).addBox(-1.8F, -1.8F, 0.0F, 3.6F, 3.6F, 10.0F)
+                        // Front gland
+                        .texOffs(294, 90).addBox(-2.1F, -2.1F, 8.4F, 4.2F, 4.2F, 2.2F),
+                PartPose.offset(-11.5F, CYLINDER_BASE_Y, CYLINDER_BASE_Z)
+        );
+        leftCylinder.addOrReplaceChild(
+                "rod",
+                CubeListBuilder.create()
+                        .texOffs(330, 90).addBox(-1.0F, -1.0F, 0.0F, 2.0F, 2.0F, CYLINDER_ROD_MODEL_LENGTH),
+                PartPose.offset(0.0F, 0.0F, CYLINDER_ROD_START_Z)
+        );
+
+        PartDefinition rightCylinder = mainBody.addOrReplaceChild(
                 "right_cylinder",
                 CubeListBuilder.create()
-                        .texOffs(294, 90).addBox(-1.5F, -1.5F, 0.0F, 3.0F, 3.0F, 14.0F)
-                        .texOffs(330, 90).addBox(-1.0F, -1.0F, 12.0F, 2.0F, 2.0F, 10.0F),
-                PartPose.offset(11.5F, 4.0F, 18.0F)
+                        .texOffs(184, 144).addBox(-2.3F, -2.3F, -2.0F, 4.6F, 4.6F, 4.0F)
+                        .texOffs(294, 90).addBox(-1.8F, -1.8F, 0.0F, 3.6F, 3.6F, 10.0F)
+                        .texOffs(294, 90).addBox(-2.1F, -2.1F, 8.4F, 4.2F, 4.2F, 2.2F),
+                PartPose.offset(11.5F, CYLINDER_BASE_Y, CYLINDER_BASE_Z)
+        );
+        rightCylinder.addOrReplaceChild(
+                "rod",
+                CubeListBuilder.create()
+                        .texOffs(330, 90).addBox(-1.0F, -1.0F, 0.0F, 2.0F, 2.0F, CYLINDER_ROD_MODEL_LENGTH),
+                PartPose.offset(0.0F, 0.0F, CYLINDER_ROD_START_Z)
         );
 
         // ── 4. C-Frame Push Arms (Pivoting on track frame) ───────────────
         PartDefinition pushArms = mainBody.addOrReplaceChild(
                 "push_arms",
                 CubeListBuilder.create()
-                        // Left push arm beam: UV [184, 144]
-                        .texOffs(184, 144).addBox(-20.5F, -2.0F, 0.0F, 4.0F, 4.0F, 34.0F)
-                        // Right push arm beam: UV [184, 144]
-                        .texOffs(184, 144).addBox(16.5F, -2.0F, 0.0F, 4.0F, 4.0F, 34.0F)
-                        // Cross-tie cross member behind blade
+                        // Left and right C-frame longitudinal beams
+                        .texOffs(184, 144).addBox(-20.5F, -2.0F, -2.0F, 4.0F, 4.0F, 36.0F)
+                        .texOffs(184, 144).addBox(16.5F, -2.0F, -2.0F, 4.0F, 4.0F, 36.0F)
+                        // Heavy rear pivot housings around the track-frame trunnions
+                        .texOffs(184, 144).addBox(-22.0F, -4.0F, -5.0F, 7.0F, 8.0F, 8.0F)
+                        .texOffs(184, 144).addBox(15.0F, -4.0F, -5.0F, 7.0F, 8.0F, 8.0F)
+                        // Reinforcement gussets near the blade end
+                        .texOffs(184, 144).addBox(-21.5F, -5.0F, 22.0F, 6.0F, 3.0F, 9.0F)
+                        .texOffs(184, 144).addBox(15.5F, -5.0F, 22.0F, 6.0F, 3.0F, 9.0F)
+                        // Hydraulic rod clevis mounts on both arms
+                        .texOffs(330, 90).addBox(-14.5F, -4.0F, 19.0F, 5.0F, 8.0F, 6.0F)
+                        .texOffs(330, 90).addBox(9.5F, -4.0F, 19.0F, 5.0F, 8.0F, 6.0F)
+                        // Double cross-tie keeps the C-frame visually rigid
+                        .texOffs(184, 144).addBox(-18.0F, -2.0F, 20.0F, 36.0F, 4.0F, 4.0F)
                         .texOffs(184, 144).addBox(-18.0F, -2.0F, 30.0F, 36.0F, 4.0F, 4.0F),
                 PartPose.offset(0.0F, 15.0F, 0.0F)
         );
@@ -193,19 +240,26 @@ public class BulldozerModel extends EntityModel<BulldozerRenderState> {
         PartDefinition blade = pushArms.addOrReplaceChild(
                 "blade",
                 CubeListBuilder.create()
-                        // Center curved moldboard (3.0m wide = 48 units X, height 15 = 0.94m Y): UV [0, 144]
+                        // Center moldboard
                         .texOffs(0, 144).addBox(-24.0F, -8.0F, 0.0F, 48.0F, 14.0F, 4.0F)
-                        // Bottom hardened cutting edge / wear lip (flush with ground)
+                        // Bottom hardened cutting edge / replaceable wear lip
                         .texOffs(0, 215).addBox(-24.5F, 5.0F, -0.5F, 49.0F, 3.0F, 5.0F)
                         // Top spill shield
                         .texOffs(0, 144).addBox(-24.0F, -11.0F, 1.0F, 48.0F, 3.0F, 2.0F)
-                        // Left side spill wing plate (retains material)
+                        // Side spill wings
                         .texOffs(0, 144).addBox(-24.0F, -8.0F, 4.0F, 2.0F, 15.0F, 6.0F)
-                        // Right side spill wing plate
                         .texOffs(0, 144).addBox(22.0F, -8.0F, 4.0F, 2.0F, 15.0F, 6.0F)
-                        // Rear reinforcing push ribs
-                        .texOffs(0, 144).addBox(-12.0F, -6.0F, -4.0F, 3.0F, 12.0F, 4.0F)
-                        .texOffs(0, 144).addBox(9.0F, -6.0F, -4.0F, 3.0F, 12.0F, 4.0F),
+                        // Full-width rear backing beam ties the moldboard into the C-frame
+                        .texOffs(184, 144).addBox(-21.0F, -1.5F, -6.5F, 42.0F, 3.0F, 3.0F)
+                        // Rear reinforcing ribs
+                        .texOffs(0, 144).addBox(-16.0F, -7.0F, -4.5F, 3.0F, 13.0F, 4.5F)
+                        .texOffs(0, 144).addBox(-1.5F, -7.0F, -4.5F, 3.0F, 13.0F, 4.5F)
+                        .texOffs(0, 144).addBox(13.0F, -7.0F, -4.5F, 3.0F, 13.0F, 4.5F)
+                        // Left/right blade mounting ears and pivot blocks
+                        .texOffs(184, 144).addBox(-19.0F, -4.5F, -8.0F, 7.0F, 9.0F, 4.0F)
+                        .texOffs(184, 144).addBox(12.0F, -4.5F, -8.0F, 7.0F, 9.0F, 4.0F)
+                        .texOffs(330, 90).addBox(-17.5F, -2.0F, -9.0F, 4.0F, 4.0F, 6.0F)
+                        .texOffs(330, 90).addBox(13.5F, -2.0F, -9.0F, 4.0F, 4.0F, 6.0F),
                 PartPose.offset(0.0F, 0.0F, 34.0F)
         );
 
@@ -230,9 +284,26 @@ public class BulldozerModel extends EntityModel<BulldozerRenderState> {
         // Blade pitch rotation on push arm tip
         this.blade.xRot = (float) Math.toRadians(state.bladeAngle) - armAngle;
 
-        // Angled hydraulic cylinders follow push arm motion
-        this.leftCylinder.xRot = armAngle * 0.70F;
-        this.rightCylinder.xRot = armAngle * 0.70F;
+        // Real cylinder kinematics. The chassis trunnion is fixed and the rod-end target
+        // moves with the C-frame. Both cylinder angle and chrome rod extension therefore
+        // follow the actual blade lift instead of using an arbitrary rotation multiplier.
+        float targetY = PUSH_ARM_PIVOT_Y - (CYLINDER_ARM_ATTACH_Z * (float) Math.sin(armAngle));
+        float targetZ = CYLINDER_ARM_ATTACH_Z * (float) Math.cos(armAngle);
+        float deltaY = targetY - CYLINDER_BASE_Y;
+        float deltaZ = targetZ - CYLINDER_BASE_Z;
+        float cylinderLength = (float) Math.sqrt(deltaY * deltaY + deltaZ * deltaZ);
+        float cylinderAngle = (float) Math.atan2(-deltaY, deltaZ);
+
+        this.leftCylinder.xRot = cylinderAngle;
+        this.rightCylinder.xRot = cylinderAngle;
+
+        float rodLength = Math.max(
+                2.0F,
+                Math.min(CYLINDER_ROD_MODEL_LENGTH, cylinderLength - CYLINDER_ROD_START_Z)
+        );
+        float rodScale = rodLength / CYLINDER_ROD_MODEL_LENGTH;
+        this.leftCylinderRod.zScale = rodScale;
+        this.rightCylinderRod.zScale = rodScale;
 
         // Live carried material visibility & dynamic volume scaling
         if (state.carriedUnits > 0) {
