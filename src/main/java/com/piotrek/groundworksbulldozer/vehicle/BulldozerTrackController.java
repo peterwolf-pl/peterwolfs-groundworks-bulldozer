@@ -26,6 +26,7 @@ public class BulldozerTrackController {
     public static final double BRAKING = 0.075D;
     public static final double TRACK_GAUGE = 2.2D;
     public static final double TRACK_LENGTH = 3.4D;
+    private static final float YAW_RESPONSE_SCALE = 0.50F;
 
     private float leftTrackSpeed = 0.0F;
     private float rightTrackSpeed = 0.0F;
@@ -76,7 +77,12 @@ public class BulldozerTrackController {
         rightTrackSpeed = approach(rightTrackSpeed, (float) targetRight);
 
         double avgForward = (leftTrackSpeed + rightTrackSpeed) * 0.5D;
-        float yawDelta = (float) Math.toDegrees((leftTrackSpeed - rightTrackSpeed) / TRACK_GAUGE) * 1.5F;
+        // Heavy bulldozer turntable response: keep differential track speeds and
+        // straight-line travel unchanged, but reduce chassis yaw to one third of
+        // the previous value so pivot turns feel appropriately slow and massive.
+        float yawDelta = (float) Math.toDegrees(
+                (leftTrackSpeed - rightTrackSpeed) / TRACK_GAUGE
+        ) * YAW_RESPONSE_SCALE;
 
         if (!onGround) {
             avgForward *= 0.5D;
