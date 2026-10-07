@@ -34,10 +34,8 @@ public class BulldozerModel extends EntityModel<BulldozerRenderState> {
     private final ModelPart[] rightRoadWheels;
     private final ModelPart[] leftCarrierRollers;
     private final ModelPart[] rightCarrierRollers;
-    private final ModelPart[] leftTopPads;
-    private final ModelPart[] rightTopPads;
-    private final ModelPart[] leftBottomPads;
-    private final ModelPart[] rightBottomPads;
+    private final ModelPart[] leftTrackLinks;
+    private final ModelPart[] rightTrackLinks;
     private final ModelPart mainBody;
     private final ModelPart pushArms;
     private final ModelPart blade;
@@ -59,9 +57,14 @@ public class BulldozerModel extends EntityModel<BulldozerRenderState> {
     private static final float IDLER_RADIUS = 4.8F;
     private static final float ROAD_WHEEL_RADIUS = 2.75F;
     private static final float CARRIER_ROLLER_RADIUS = 2.0F;
-    private static final float TRACK_PAD_HALF_SPAN = 22.0F;
-    private static final float TRACK_PAD_SPAN = TRACK_PAD_HALF_SPAN * 2.0F;
-    private static final float[] TRACK_PAD_BASE_Z = {-20.0F, -12.0F, -4.0F, 4.0F, 12.0F, 20.0F};
+    private static final int TRACK_LINK_COUNT = 36;
+    private static final float TRACK_CENTER_FRONT_Z = 21.0F;
+    private static final float TRACK_CENTER_REAR_Z = -21.0F;
+    private static final float TRACK_LOOP_RADIUS = 6.3F;
+    private static final float TRACK_STRAIGHT_LENGTH = TRACK_CENTER_FRONT_Z - TRACK_CENTER_REAR_Z;
+    private static final float TRACK_ARC_LENGTH = (float) Math.PI * TRACK_LOOP_RADIUS;
+    public static final float TRACK_LOOP_LENGTH =
+            (2.0F * TRACK_STRAIGHT_LENGTH) + (2.0F * TRACK_ARC_LENGTH);
 
     public BulldozerModel(ModelPart root) {
         super(root);
@@ -77,10 +80,8 @@ public class BulldozerModel extends EntityModel<BulldozerRenderState> {
         this.rightRoadWheels = children(rightTrack, "road_wheel_", 5);
         this.leftCarrierRollers = children(leftTrack, "carrier_roller_", 2);
         this.rightCarrierRollers = children(rightTrack, "carrier_roller_", 2);
-        this.leftTopPads = children(leftTrack, "top_pad_", TRACK_PAD_BASE_Z.length);
-        this.rightTopPads = children(rightTrack, "top_pad_", TRACK_PAD_BASE_Z.length);
-        this.leftBottomPads = children(leftTrack, "bottom_pad_", TRACK_PAD_BASE_Z.length);
-        this.rightBottomPads = children(rightTrack, "bottom_pad_", TRACK_PAD_BASE_Z.length);
+        this.leftTrackLinks = children(leftTrack, "track_link_", TRACK_LINK_COUNT);
+        this.rightTrackLinks = children(rightTrack, "track_link_", TRACK_LINK_COUNT);
 
         this.mainBody = root.getChild("main_body");
         this.pushArms = this.mainBody.getChild("push_arms");
@@ -103,13 +104,8 @@ public class BulldozerModel extends EntityModel<BulldozerRenderState> {
 
     private static CubeListBuilder crawlerStaticGeometry() {
         return CubeListBuilder.create()
-                // Open upper and lower crawler belt runs.
-                .texOffs(0, 0).addBox(-4.5F, -7.0F, -26.0F, 9.0F, 2.0F, 52.0F)
-                .texOffs(0, 0).addBox(-4.5F, 5.5F, -26.0F, 9.0F, 2.0F, 52.0F)
-                // Short end wraps keep the belt visually continuous without hiding the wheels.
-                .texOffs(0, 0).addBox(-4.5F, -5.0F, 24.5F, 9.0F, 10.5F, 3.5F)
-                .texOffs(0, 0).addBox(-4.5F, -5.0F, -28.0F, 9.0F, 10.5F, 3.5F)
-                // Central roller frame / equalizer beam.
+                // Only the inner roller frame stays static. The belt itself is built from
+                // animated links, so no slab can hide motion on the top or end wraps.
                 .texOffs(144, 0).addBox(-1.2F, -2.0F, -22.5F, 2.4F, 5.0F, 45.0F)
                 // Rear recoil/tensioner body behind the idler.
                 .texOffs(144, 0).addBox(-3.2F, -1.8F, -19.0F, 6.4F, 3.6F, 9.0F)
@@ -163,19 +159,14 @@ public class BulldozerModel extends EntityModel<BulldozerRenderState> {
             );
         }
 
-        // Six animated grouser markers per straight run make belt travel visible.
-        for (int i = 0; i < TRACK_PAD_BASE_Z.length; i++) {
+        // Full animated belt loop. Every link follows the same continuous rounded
+        // rectangle, including the front drive-sprocket wrap and rear idler wrap.
+        for (int i = 0; i < TRACK_LINK_COUNT; i++) {
             track.addOrReplaceChild(
-                    "top_pad_" + i,
+                    "track_link_" + i,
                     CubeListBuilder.create()
-                            .texOffs(0, 0).addBox(-4.8F, -0.6F, -1.5F, 9.6F, 1.2F, 3.0F),
-                    PartPose.offset(0.0F, -7.3F, TRACK_PAD_BASE_Z[i])
-            );
-            track.addOrReplaceChild(
-                    "bottom_pad_" + i,
-                    CubeListBuilder.create()
-                            .texOffs(0, 0).addBox(-4.8F, -0.6F, -1.5F, 9.6F, 1.2F, 3.0F),
-                    PartPose.offset(0.0F, 7.8F, TRACK_PAD_BASE_Z[i])
+                            .texOffs(0, 0).addBox(-5.0F, -0.75F, -1.8F, 10.0F, 1.5F, 3.6F),
+                    PartPose.offset(0.0F, -TRACK_LOOP_RADIUS, TRACK_CENTER_REAR_Z)
             );
         }
     }
@@ -322,21 +313,24 @@ public class BulldozerModel extends EntityModel<BulldozerRenderState> {
         PartDefinition pushArms = mainBody.addOrReplaceChild(
                 "push_arms",
                 CubeListBuilder.create()
-                        // Left and right C-frame longitudinal beams
-                        .texOffs(184, 144).addBox(-20.5F, -2.0F, -2.0F, 4.0F, 4.0F, 36.0F)
-                        .texOffs(184, 144).addBox(16.5F, -2.0F, -2.0F, 4.0F, 4.0F, 36.0F)
-                        // Heavy rear pivot housings around the track-frame trunnions
-                        .texOffs(184, 144).addBox(-22.0F, -4.0F, -5.0F, 7.0F, 8.0F, 8.0F)
-                        .texOffs(184, 144).addBox(15.0F, -4.0F, -5.0F, 7.0F, 8.0F, 8.0F)
-                        // Reinforcement gussets near the blade end
-                        .texOffs(184, 144).addBox(-21.5F, -5.0F, 22.0F, 6.0F, 3.0F, 9.0F)
-                        .texOffs(184, 144).addBox(15.5F, -5.0F, 22.0F, 6.0F, 3.0F, 9.0F)
-                        // Hydraulic rod clevis mounts on both arms
-                        .texOffs(330, 90).addBox(-14.5F, -4.0F, 19.0F, 5.0F, 8.0F, 6.0F)
-                        .texOffs(330, 90).addBox(9.5F, -4.0F, 19.0F, 5.0F, 8.0F, 6.0F)
-                        // Double cross-tie keeps the C-frame visually rigid
-                        .texOffs(184, 144).addBox(-18.0F, -2.0F, 20.0F, 36.0F, 4.0F, 4.0F)
-                        .texOffs(184, 144).addBox(-18.0F, -2.0F, 30.0F, 36.0F, 4.0F, 4.0F),
+                        // Extra-wide C-frame runs completely outside the crawler envelope.
+                        // Tracks span roughly X=-20..-11 and X=11..20, so the arms begin
+                        // beyond X=22 with a visible air gap instead of intersecting them.
+                        .texOffs(184, 144).addBox(-27.0F, -2.0F, -2.0F, 4.0F, 4.0F, 36.0F)
+                        .texOffs(184, 144).addBox(23.0F, -2.0F, -2.0F, 4.0F, 4.0F, 36.0F)
+                        // Outboard rear pivot housings.
+                        .texOffs(184, 144).addBox(-28.5F, -4.0F, -5.0F, 6.0F, 8.0F, 8.0F)
+                        .texOffs(184, 144).addBox(22.5F, -4.0F, -5.0F, 6.0F, 8.0F, 8.0F)
+                        // Reinforcement gussets near the blade end.
+                        .texOffs(184, 144).addBox(-28.0F, -5.0F, 24.0F, 5.5F, 3.0F, 9.0F)
+                        .texOffs(184, 144).addBox(22.5F, -5.0F, 24.0F, 5.5F, 3.0F, 9.0F)
+                        // Hydraulic rod clevis mounts stay outboard with the C-frame.
+                        .texOffs(330, 90).addBox(-27.0F, -4.0F, 19.0F, 4.5F, 8.0F, 6.0F)
+                        .texOffs(330, 90).addBox(22.5F, -4.0F, 19.0F, 4.5F, 8.0F, 6.0F)
+                        // Cross-ties are pushed ahead of the track nose so they no longer
+                        // pass through the front sprocket silhouette.
+                        .texOffs(184, 144).addBox(-24.0F, -2.0F, 28.0F, 48.0F, 4.0F, 4.0F)
+                        .texOffs(184, 144).addBox(-24.0F, -2.0F, 32.0F, 48.0F, 4.0F, 4.0F),
                 PartPose.offset(0.0F, 15.0F, 0.0F)
         );
 
@@ -387,8 +381,7 @@ public class BulldozerModel extends EntityModel<BulldozerRenderState> {
                 this.leftIdler,
                 this.leftRoadWheels,
                 this.leftCarrierRollers,
-                this.leftTopPads,
-                this.leftBottomPads
+                this.leftTrackLinks
         );
         animateCrawler(
                 state.rightTrackTravel,
@@ -396,8 +389,7 @@ public class BulldozerModel extends EntityModel<BulldozerRenderState> {
                 this.rightIdler,
                 this.rightRoadWheels,
                 this.rightCarrierRollers,
-                this.rightTopPads,
-                this.rightBottomPads
+                this.rightTrackLinks
         );
 
         // Continuous blade lifting animation: positive bladeHeight lifts the blade up
@@ -449,11 +441,10 @@ public class BulldozerModel extends EntityModel<BulldozerRenderState> {
             ModelPart idler,
             ModelPart[] roadWheels,
             ModelPart[] carrierRollers,
-            ModelPart[] topPads,
-            ModelPart[] bottomPads
+            ModelPart[] links
     ) {
-        // Track travel is stored in model pixels. Wheel angular velocity therefore follows
-        // v/r and each side can rotate independently during differential steering.
+        // Wheel angular velocity follows v/r. Both sides are independent, so pivot turns
+        // visibly rotate the two crawler systems in opposite directions.
         driveSprocket.xRot = -travel / DRIVE_SPROCKET_RADIUS;
         idler.xRot = -travel / IDLER_RADIUS;
 
@@ -464,22 +455,55 @@ public class BulldozerModel extends EntityModel<BulldozerRenderState> {
             carrierRoller.xRot = -travel / CARRIER_ROLLER_RADIUS;
         }
 
-        // On a rolling crawler the top run travels forward relative to the chassis while
-        // the bottom ground-contact run travels backward. Wrapping keeps markers inside
-        // the straight sections and avoids moving the entire belt mesh.
-        for (int i = 0; i < TRACK_PAD_BASE_Z.length; i++) {
-            topPads[i].z = wrapTrackPad(TRACK_PAD_BASE_Z[i] + travel);
-            bottomPads[i].z = wrapTrackPad(TRACK_PAD_BASE_Z[i] - travel);
+        float spacing = TRACK_LOOP_LENGTH / TRACK_LINK_COUNT;
+        for (int i = 0; i < links.length; i++) {
+            placeTrackLinkOnLoop(links[i], wrapLoopDistance(travel + (i * spacing)));
         }
     }
 
-    private static float wrapTrackPad(float z) {
-        while (z > TRACK_PAD_HALF_SPAN) {
-            z -= TRACK_PAD_SPAN;
+    private static float wrapLoopDistance(float distance) {
+        distance %= TRACK_LOOP_LENGTH;
+        if (distance < 0.0F) {
+            distance += TRACK_LOOP_LENGTH;
         }
-        while (z < -TRACK_PAD_HALF_SPAN) {
-            z += TRACK_PAD_SPAN;
+        return distance;
+    }
+
+    private static void placeTrackLinkOnLoop(ModelPart link, float distance) {
+        // 1. Upper run: rear idler -> front sprocket.
+        if (distance < TRACK_STRAIGHT_LENGTH) {
+            link.y = -TRACK_LOOP_RADIUS;
+            link.z = TRACK_CENTER_REAR_Z + distance;
+            link.xRot = 0.0F;
+            return;
         }
-        return z;
+        distance -= TRACK_STRAIGHT_LENGTH;
+
+        // 2. Front wrap: top -> nose -> bottom around the drive sprocket.
+        if (distance < TRACK_ARC_LENGTH) {
+            float t = distance / TRACK_ARC_LENGTH;
+            float angle = (float) (-Math.PI * 0.5D + (Math.PI * t));
+            link.y = (float) Math.sin(angle) * TRACK_LOOP_RADIUS;
+            link.z = TRACK_CENTER_FRONT_Z + ((float) Math.cos(angle) * TRACK_LOOP_RADIUS);
+            link.xRot = angle + ((float) Math.PI * 0.5F);
+            return;
+        }
+        distance -= TRACK_ARC_LENGTH;
+
+        // 3. Lower run: front sprocket -> rear idler.
+        if (distance < TRACK_STRAIGHT_LENGTH) {
+            link.y = TRACK_LOOP_RADIUS;
+            link.z = TRACK_CENTER_FRONT_Z - distance;
+            link.xRot = (float) Math.PI;
+            return;
+        }
+        distance -= TRACK_STRAIGHT_LENGTH;
+
+        // 4. Rear wrap: bottom -> tail -> top around the tension/idler wheel.
+        float t = distance / TRACK_ARC_LENGTH;
+        float angle = (float) (Math.PI * 0.5D + (Math.PI * t));
+        link.y = (float) Math.sin(angle) * TRACK_LOOP_RADIUS;
+        link.z = TRACK_CENTER_REAR_Z + ((float) Math.cos(angle) * TRACK_LOOP_RADIUS);
+        link.xRot = angle + ((float) Math.PI * 0.5F);
     }
 }
