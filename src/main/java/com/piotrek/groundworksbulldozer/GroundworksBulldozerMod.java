@@ -49,7 +49,13 @@ public class GroundworksBulldozerMod implements ModInitializer {
     public static final SoundEvent ENGINE_LOOP = Registry.register(
             BuiltInRegistries.SOUND_EVENT,
             id("engine_loop"),
-            SoundEvent.createFixedRangeEvent(id("engine_loop"), 48.0F)
+            SoundEvent.createFixedRangeEvent(id("engine_loop"), 14.0F)
+    );
+
+    public static final SoundEvent ENGINE_LOAD = Registry.register(
+            BuiltInRegistries.SOUND_EVENT,
+            id("engine_load"),
+            SoundEvent.createFixedRangeEvent(id("engine_load"), 14.0F)
     );
 
     // ── Item Registration ────────────────────────────────────────────
