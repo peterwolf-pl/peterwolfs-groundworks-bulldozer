@@ -104,6 +104,44 @@ class BladeDownRemovesAndPushesMaterialTest {
     }
 
     @Test
+    @DisplayName("Blade carrying dirt leaves foreign sand terrain untouched")
+    void testBladeDoesNotTransmuteForeignMaterial() {
+        TestGranularTerrain terrain = new TestGranularTerrain();
+
+        for (int x = -2; x <= 2; x++) {
+            for (int z = 1; z <= 3; z++) {
+                terrain.createFullCell(
+                        new BlockPos(x, 65, z),
+                        GranularMaterialRegistry.SAND
+                );
+            }
+        }
+
+        int initialSandUnits = terrain.countTotalWorldUnits();
+        int carriedDirt = 200;
+
+        BladeTransform before = BladeTransform.compute(
+                new Vec3(0, 65, 0), 0, 0, 0, -0.20F, -2.5F);
+        BladeTransform after = BladeTransform.compute(
+                new Vec3(0, 65, 0.4), 0, 0, 0, -0.20F, -2.5F);
+
+        BladeTickResult result = BulldozerBladeController.tick(
+                terrain,
+                before,
+                after,
+                carriedDirt,
+                GranularMaterialRegistry.DIRT
+        );
+
+        assertEquals(0, result.unitsExcavated(),
+                "A dirt-loaded blade must not excavate sand into the dirt carry buffer");
+        assertEquals(initialSandUnits, terrain.countTotalWorldUnits(),
+                "Foreign sand terrain must remain untouched");
+        assertEquals(carriedDirt, result.carriedUnitsAfter());
+        assertEquals(GranularMaterialRegistry.DIRT.id(), result.carriedMaterialAfter().id());
+    }
+
+    @Test
     @DisplayName("Supports dirt, sand, and gravel materials")
     void testMaterialSupport() {
         for (GranularMaterial mat : new GranularMaterial[]{
@@ -126,10 +164,10 @@ class BladeDownRemovesAndPushesMaterialTest {
     }
 
     @Test
-    @DisplayName("Doubled blade capacity (1536 units / 3.0 m³) holds 2x material before spill")
+    @DisplayName("Blade capacity (3072 units / 6.0 m³) holds 6 blocks before spill")
     void testDoubledBladeCapacity() {
-        assertEquals(1536, BulldozerBladeController.MAX_BLADE_CAPACITY,
-                "Max blade capacity must be doubled to 1536 units (3.0 m³)");
+        assertEquals(3072, BulldozerBladeController.MAX_BLADE_CAPACITY,
+                "Max blade capacity must be 3072 units (6.0 m³)");
 
         TestGranularTerrain terrain = new TestGranularTerrain();
         // Create large multi-block soil ridge in front of blade

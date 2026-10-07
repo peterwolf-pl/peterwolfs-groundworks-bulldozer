@@ -127,11 +127,12 @@ public class BulldozerTrackController {
 
         double halfGauge = TRACK_GAUGE * 0.5D;
         double halfLength = TRACK_LENGTH * 0.5D;
+        double maxAllowedGroundY = basePos.y + 0.40D;
 
-        double frontLeftY = sampleGroundHeight(level, basePos.add(heading.scale(halfLength)).subtract(right.scale(halfGauge)));
-        double frontRightY = sampleGroundHeight(level, basePos.add(heading.scale(halfLength)).add(right.scale(halfGauge)));
-        double rearLeftY = sampleGroundHeight(level, basePos.subtract(heading.scale(halfLength)).subtract(right.scale(halfGauge)));
-        double rearRightY = sampleGroundHeight(level, basePos.subtract(heading.scale(halfLength)).add(right.scale(halfGauge)));
+        double frontLeftY = sampleGroundHeight(level, basePos.add(heading.scale(halfLength)).subtract(right.scale(halfGauge)), maxAllowedGroundY);
+        double frontRightY = sampleGroundHeight(level, basePos.add(heading.scale(halfLength)).add(right.scale(halfGauge)), maxAllowedGroundY);
+        double rearLeftY = sampleGroundHeight(level, basePos.subtract(heading.scale(halfLength)).subtract(right.scale(halfGauge)), maxAllowedGroundY);
+        double rearRightY = sampleGroundHeight(level, basePos.subtract(heading.scale(halfLength)).add(right.scale(halfGauge)), maxAllowedGroundY);
 
         double frontAvg = (frontLeftY + frontRightY) * 0.5D;
         double rearAvg = (rearLeftY + rearRightY) * 0.5D;
@@ -157,7 +158,11 @@ public class BulldozerTrackController {
      * Groundworks surface query and falling back to vanilla collision geometry.
      */
     public static double sampleGroundHeight(ServerLevel level, Vec3 pos) {
-        BlockPos start = BlockPos.containing(pos.x, pos.y + 0.8D, pos.z);
+        return sampleGroundHeight(level, pos, pos.y + 0.8D);
+    }
+
+    public static double sampleGroundHeight(ServerLevel level, Vec3 pos, double maxAllowedGroundY) {
+        BlockPos start = BlockPos.containing(pos.x, Math.min(pos.y + 0.35D, maxAllowedGroundY), pos.z);
 
         for (int dy = 0; dy <= 4; dy++) {
             BlockPos check = start.below(dy);
@@ -165,17 +170,25 @@ public class BulldozerTrackController {
             double surfaceY = GroundworksApi.getSurfaceWorldY(
                     level, check, pos.x, pos.z);
             if (Double.isFinite(surfaceY)) {
-                return surfaceY;
+                if (surfaceY <= maxAllowedGroundY) {
+                    return surfaceY;
+                }
             }
 
             BlockState state = level.getBlockState(check);
             if (!state.isAir()) {
                 VoxelShape shape = state.getCollisionShape(level, check);
                 if (!shape.isEmpty()) {
-                    return check.getY() + shape.max(Direction.Axis.Y);
+                    double top = check.getY() + shape.max(Direction.Axis.Y);
+                    if (top <= maxAllowedGroundY) {
+                        return top;
+                    }
                 }
                 if (state.isSolid()) {
-                    return check.getY() + 1.0D;
+                    double top = check.getY() + 1.0D;
+                    if (top <= maxAllowedGroundY) {
+                        return top;
+                    }
                 }
             }
         }

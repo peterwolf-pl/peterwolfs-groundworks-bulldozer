@@ -55,7 +55,7 @@ public class GroundworksBulldozerEntity extends Entity {
     // ── Blade Limits ─────────────────────────────────────────────────
     public static final float MIN_BLADE_HEIGHT = -0.60F; // Deep trenching / cutting
     public static final float MAX_BLADE_HEIGHT = 0.80F;  // Raised transport position
-    public static final float DEFAULT_BLADE_HEIGHT = 0.25F;
+    public static final float DEFAULT_BLADE_HEIGHT = 0.0F; // Ground-level grading position
     public static final float LIFT_SPEED = 0.035F;       // Smooth hydraulic travel per tick
 
     // ── Synched Entity Data ───────────────────────────────────────────
@@ -222,19 +222,9 @@ public class GroundworksBulldozerEntity extends Entity {
         } else {
             motion = motion.add(0.0D, -0.02D, 0.0D); // Keep tracks firmly grounded
         }
-        this.setDeltaMovement(motion);
-        this.move(MoverType.SELF, motion);
 
-        // Force position synchronization to passengers and tracking clients while driving
-        if (hasDriver || Math.abs(trackState.leftSpeed()) > 0.001F || Math.abs(trackState.rightSpeed()) > 0.001F || Math.abs(trackState.yawDeltaDegrees()) > 0.01F) {
-            this.syncPosition = true;
-            this.needsSync = true;
-            this.syncVelocity = true;
-        }
-
-        // 4. Update Blade Transforms (Previous & Current)
-        previousBladeTransform = currentBladeTransform;
-        currentBladeTransform = BladeTransform.compute(
+        // 4. Update Blade Transforms and Execute Terrain Grading BEFORE Vehicle Motion
+        BladeTransform currentTransform = BladeTransform.compute(
                 this.position(),
                 this.getYRot(),
                 trackState.pitch(),
@@ -244,15 +234,25 @@ public class GroundworksBulldozerEntity extends Entity {
         );
 
         if (previousBladeTransform == null) {
-            previousBladeTransform = currentBladeTransform;
+            previousBladeTransform = currentTransform;
         }
+
+        Vec3 targetPos = this.position().add(motion);
+        BladeTransform nextTransform = BladeTransform.compute(
+                targetPos,
+                this.getYRot(),
+                trackState.pitch(),
+                trackState.roll(),
+                bladeHeight,
+                bladeAngle
+        );
 
         // 5. Authoritative Blade Terrain Interaction
         GroundworksBulldozerAdapter adapter = GroundworksBulldozerAdapter.of(serverLevel);
         BladeTickResult bladeResult = BulldozerBladeController.tick(
                 adapter,
                 previousBladeTransform,
-                currentBladeTransform,
+                nextTransform,
                 carriedUnits,
                 carriedMaterial
         );
@@ -261,6 +261,27 @@ public class GroundworksBulldozerEntity extends Entity {
         this.carriedMaterial = bladeResult.carriedMaterialAfter();
         this.lastExcavatedUnits = bladeResult.unitsExcavated();
         this.lastDepositedUnits = bladeResult.unitsDeposited();
+
+        // 6. Apply Vehicle Movement (now unobstructed by excavated/pushed loose material)
+        this.setDeltaMovement(motion);
+        this.move(MoverType.SELF, motion);
+
+        previousBladeTransform = BladeTransform.compute(
+                this.position(),
+                this.getYRot(),
+                trackState.pitch(),
+                trackState.roll(),
+                bladeHeight,
+                bladeAngle
+        );
+        currentBladeTransform = previousBladeTransform;
+
+        // Force position synchronization to passengers and tracking clients while driving
+        if (hasDriver || Math.abs(trackState.leftSpeed()) > 0.001F || Math.abs(trackState.rightSpeed()) > 0.001F || Math.abs(trackState.yawDeltaDegrees()) > 0.01F) {
+            this.syncPosition = true;
+            this.needsSync = true;
+            this.syncVelocity = true;
+        }
 
         // Spawn visual dust/shaving particles & scraping audio when actively pushing terrain
         if (bladeResult.isPushing() || bladeResult.unitsExcavated() > 0) {
@@ -350,7 +371,10 @@ public class GroundworksBulldozerEntity extends Entity {
 
     @Override
     public float maxUpStep() {
-        return 1.25F;
+        // When blade is raised in transport position (> 0.40m), allow climbing steps.
+        // When blade is down/grading (<= 0.40m), keep step height at 0.6F so the bulldozer
+        // stays firmly on the ground and pushes loose material rather than riding up on it.
+        return this.bladeHeight > 0.40F ? 1.0F : 0.6F;
     }
 
     @Override

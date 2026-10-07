@@ -1,5 +1,6 @@
 package com.piotrek.groundworksbulldozer.blade;
 
+import com.piotrek.groundworks.api.excavation.ExcavationResult;
 import com.piotrek.groundworks.api.material.GranularMaterial;
 import com.piotrek.groundworksbulldozer.integration.groundworks.IGranularTerrainAccess;
 import net.minecraft.core.BlockPos;
@@ -27,7 +28,7 @@ import java.util.Set;
  */
 public final class BulldozerBladeController {
 
-    public static final int MAX_BLADE_CAPACITY = 1536; // 3.0 full blocks of granular material (3.0 m³ - 2x capacity)
+    public static final int MAX_BLADE_CAPACITY = 3072; // 6.0 full blocks of granular material (6.0 m³ - 6 blocks capacity)
     public static final double MIN_MOVE_SPEED = 0.005D;
     public static final double MAX_VALID_MOVE = 2.0D;
     public static final int SWEEP_SUBDIVISIONS = 3;
@@ -122,7 +123,7 @@ public final class BulldozerBladeController {
                 BlockPos below = pos.below();
 
                 List<BlockPos> candidates = new ArrayList<>(3);
-                if (pt.y + BladeTransform.DEFAULT_BLADE_HEIGHT > above.getY()) {
+                if (pt.y + BladeTransform.DEFAULT_BLADE_HEIGHT > above.getY() - 0.2D) {
                     candidates.add(above);
                 }
                 candidates.add(pos);
@@ -132,19 +133,90 @@ public final class BulldozerBladeController {
 
                 for (BlockPos targetPos : candidates) {
                     if (processedBlocks.add(targetPos) && terrain.isDiggable(targetPos)) {
-                        int room = MAX_BLADE_CAPACITY - currentUnits;
-                        if (room > 0) {
-                            GranularMaterial sourceMaterial = terrain.getMaterial(targetPos);
-                            int toRemove = Math.min(room, 128);
-                            int removed = terrain.excavateMicrovoxelsAbove(targetPos, pt.y, toRemove);
-                            if (removed > 0) {
-                                totalExcavated += removed;
-                                currentUnits += removed;
-                                affected.add(targetPos);
+                        GranularMaterial sourceMaterial = terrain.getMaterial(targetPos);
+                        if (sourceMaterial == GranularMaterial.EMPTY) {
+                            continue;
+                        }
 
-                                if (currentMaterial == GranularMaterial.EMPTY
-                                        && sourceMaterial != GranularMaterial.EMPTY) {
-                                    currentMaterial = sourceMaterial;
+                        GranularMaterial requiredMaterial =
+                                currentMaterial == GranularMaterial.EMPTY
+                                        ? sourceMaterial
+                                        : currentMaterial;
+
+                        // A blade carry buffer is single-material. Foreign terrain
+                        // remains untouched until the current load is deposited.
+                        if (sourceMaterial.id() != requiredMaterial.id()) {
+                            continue;
+                        }
+
+                        int toRemove = 128;
+                        ExcavationResult excavation = terrain.excavateMicrovoxelsAbove(
+                                targetPos,
+                                pt.y,
+                                toRemove,
+                                requiredMaterial
+                        );
+                        if (excavation.success()) {
+                            if (excavation.material().id() != requiredMaterial.id()) {
+                                throw new IllegalStateException(
+                                        "Groundworks material filter violation: required="
+                                                + requiredMaterial.name()
+                                                + ", removed=" + excavation.material().name()
+                                );
+                            }
+
+                            int removed = excavation.unitsRemoved();
+                            totalExcavated += removed;
+                            affected.add(targetPos);
+
+                            if (currentMaterial == GranularMaterial.EMPTY) {
+                                currentMaterial = excavation.material();
+                            }
+
+                            // 1. Live carry buffer retention (holds up to 768 units = 1.5 m³ of rolling surcharge against moldboard)
+                            int liveSurchargeTarget = 768;
+                            int roomInSurcharge = Math.max(0, liveSurchargeTarget - currentUnits);
+                            int toCarry = (roomInSurcharge > 0)
+                                    ? Math.min(roomInSurcharge, Math.max(1, removed / 2))
+                                    : 0;
+                            currentUnits += toCarry;
+                            int toHeap = removed - toCarry;
+
+                            // 2. Active rolling surcharge / forward heap formation in front of the blade
+                            if (toHeap > 0) {
+                                Vec3 forwardPt = pt.add(currTransform.forward().scale(0.85D));
+                                BlockPos forwardPos = BlockPos.containing(forwardPt.x, forwardPt.y, forwardPt.z);
+                                if (forwardPos.equals(targetPos)) {
+                                    forwardPt = pt.add(currTransform.forward().scale(1.5D));
+                                    forwardPos = BlockPos.containing(forwardPt.x, forwardPt.y, forwardPt.z);
+                                }
+
+                                int pushed = terrain.deposit(forwardPos, currentMaterial, toHeap);
+                                if (pushed > 0) {
+                                    totalDeposited += pushed;
+                                    affected.add(forwardPos);
+                                    terrain.markSimulate(forwardPos);
+                                    toHeap -= pushed;
+                                }
+
+                                // 3. Lateral windrow spillage around wings if forward heap is full
+                                if (toHeap > 0) {
+                                    Vec3 spillPt = (e % 2 == 0)
+                                            ? currTransform.leftWingPoint().subtract(currTransform.right().scale(0.5D))
+                                            : currTransform.rightWingPoint().add(currTransform.right().scale(0.5D));
+                                    BlockPos spillPos = BlockPos.containing(spillPt.x, spillPt.y, spillPt.z);
+                                    int spilled = terrain.deposit(spillPos, currentMaterial, toHeap);
+                                    if (spilled > 0) {
+                                        totalDeposited += spilled;
+                                        affected.add(spillPos);
+                                        terrain.markSimulate(spillPos);
+                                        toHeap -= spilled;
+                                    }
+                                }
+
+                                // 4. Retain any undeposited units in carry buffer up to MAX_BLADE_CAPACITY to strictly conserve volume
+                                if (toHeap > 0) {
+                                    currentUnits += toHeap;
                                 }
                             }
                         }
