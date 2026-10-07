@@ -210,10 +210,11 @@ public class BulldozerModel extends EntityModel<BulldozerRenderState> {
                         .texOffs(0, 76).addBox(-10.0F, -1.0F, 0.0F, 20.0F, 13.0F, 24.0F)
                         // Front radiator steel grille & guard: UV [124, 76]
                         .texOffs(124, 76).addBox(-9.5F, 0.0F, 24.0F, 19.0F, 12.0F, 2.0F)
-                        // Left mudguard walkway: UV [144, 0]
-                        .texOffs(144, 0).addBox(-19.0F, 10.0F, -22.0F, 8.0F, 2.0F, 44.0F)
-                        // Right mudguard walkway: UV [144, 0]
-                        .texOffs(144, 0).addBox(11.0F, 10.0F, -22.0F, 8.0F, 2.0F, 44.0F)
+                        // Left cab-side mudguard / walkway. Trimmed to the cab footprint
+                        // so the animated upper crawler run stays fully visible fore and aft.
+                        .texOffs(144, 0).addBox(-19.0F, 10.0F, -16.0F, 8.0F, 2.0F, 20.0F)
+                        // Right cab-side mudguard / walkway.
+                        .texOffs(144, 0).addBox(11.0F, 10.0F, -16.0F, 8.0F, 2.0F, 20.0F)
                         // Rear fuel / hydraulic tank: UV [0, 76]
                         .texOffs(0, 76).addBox(-11.0F, 3.0F, -22.0F, 22.0F, 9.0F, 6.0F)
                         // Exhaust stack pipe: UV [374, 90]
