@@ -26,6 +26,18 @@ import net.minecraft.client.model.geom.builders.PartDefinition;
 public class BulldozerModel extends EntityModel<BulldozerRenderState> {
 
     private final ModelPart undercarriage;
+    private final ModelPart leftDriveSprocket;
+    private final ModelPart rightDriveSprocket;
+    private final ModelPart leftIdler;
+    private final ModelPart rightIdler;
+    private final ModelPart[] leftRoadWheels;
+    private final ModelPart[] rightRoadWheels;
+    private final ModelPart[] leftCarrierRollers;
+    private final ModelPart[] rightCarrierRollers;
+    private final ModelPart[] leftTopPads;
+    private final ModelPart[] rightTopPads;
+    private final ModelPart[] leftBottomPads;
+    private final ModelPart[] rightBottomPads;
     private final ModelPart mainBody;
     private final ModelPart pushArms;
     private final ModelPart blade;
@@ -43,9 +55,33 @@ public class BulldozerModel extends EntityModel<BulldozerRenderState> {
     private static final float CYLINDER_ROD_START_Z = 8.5F;
     private static final float CYLINDER_ROD_MODEL_LENGTH = 12.0F;
 
+    private static final float DRIVE_SPROCKET_RADIUS = 4.8F;
+    private static final float IDLER_RADIUS = 4.8F;
+    private static final float ROAD_WHEEL_RADIUS = 2.75F;
+    private static final float CARRIER_ROLLER_RADIUS = 2.0F;
+    private static final float TRACK_PAD_HALF_SPAN = 22.0F;
+    private static final float TRACK_PAD_SPAN = TRACK_PAD_HALF_SPAN * 2.0F;
+    private static final float[] TRACK_PAD_BASE_Z = {-20.0F, -12.0F, -4.0F, 4.0F, 12.0F, 20.0F};
+
     public BulldozerModel(ModelPart root) {
         super(root);
         this.undercarriage = root.getChild("undercarriage");
+
+        ModelPart leftTrack = this.undercarriage.getChild("left_track");
+        ModelPart rightTrack = this.undercarriage.getChild("right_track");
+        this.leftDriveSprocket = leftTrack.getChild("drive_sprocket");
+        this.rightDriveSprocket = rightTrack.getChild("drive_sprocket");
+        this.leftIdler = leftTrack.getChild("idler");
+        this.rightIdler = rightTrack.getChild("idler");
+        this.leftRoadWheels = children(leftTrack, "road_wheel_", 5);
+        this.rightRoadWheels = children(rightTrack, "road_wheel_", 5);
+        this.leftCarrierRollers = children(leftTrack, "carrier_roller_", 2);
+        this.rightCarrierRollers = children(rightTrack, "carrier_roller_", 2);
+        this.leftTopPads = children(leftTrack, "top_pad_", TRACK_PAD_BASE_Z.length);
+        this.rightTopPads = children(rightTrack, "top_pad_", TRACK_PAD_BASE_Z.length);
+        this.leftBottomPads = children(leftTrack, "bottom_pad_", TRACK_PAD_BASE_Z.length);
+        this.rightBottomPads = children(rightTrack, "bottom_pad_", TRACK_PAD_BASE_Z.length);
+
         this.mainBody = root.getChild("main_body");
         this.pushArms = this.mainBody.getChild("push_arms");
         this.blade = this.pushArms.getChild("blade");
@@ -55,6 +91,93 @@ public class BulldozerModel extends EntityModel<BulldozerRenderState> {
         this.leftCylinderRod = this.leftCylinder.getChild("rod");
         this.rightCylinderRod = this.rightCylinder.getChild("rod");
         this.beaconReflector = this.mainBody.getChild("beacon_base").getChild("beacon_reflector");
+    }
+
+    private static ModelPart[] children(ModelPart parent, String prefix, int count) {
+        ModelPart[] parts = new ModelPart[count];
+        for (int i = 0; i < count; i++) {
+            parts[i] = parent.getChild(prefix + i);
+        }
+        return parts;
+    }
+
+    private static CubeListBuilder crawlerStaticGeometry() {
+        return CubeListBuilder.create()
+                // Open upper and lower crawler belt runs.
+                .texOffs(0, 0).addBox(-4.5F, -7.0F, -26.0F, 9.0F, 2.0F, 52.0F)
+                .texOffs(0, 0).addBox(-4.5F, 5.5F, -26.0F, 9.0F, 2.0F, 52.0F)
+                // Short end wraps keep the belt visually continuous without hiding the wheels.
+                .texOffs(0, 0).addBox(-4.5F, -5.0F, 24.5F, 9.0F, 10.5F, 3.5F)
+                .texOffs(0, 0).addBox(-4.5F, -5.0F, -28.0F, 9.0F, 10.5F, 3.5F)
+                // Central roller frame / equalizer beam.
+                .texOffs(144, 0).addBox(-1.2F, -2.0F, -22.5F, 2.4F, 5.0F, 45.0F)
+                // Rear recoil/tensioner body behind the idler.
+                .texOffs(144, 0).addBox(-3.2F, -1.8F, -19.0F, 6.4F, 3.6F, 9.0F)
+                .texOffs(144, 0).addBox(-3.6F, -2.2F, -17.2F, 7.2F, 4.4F, 1.2F)
+                .texOffs(144, 0).addBox(-3.6F, -2.2F, -14.6F, 7.2F, 4.4F, 1.2F)
+                .texOffs(144, 0).addBox(-3.6F, -2.2F, -12.0F, 7.2F, 4.4F, 1.2F);
+    }
+
+    private static void addCrawlerMovingParts(PartDefinition track) {
+        // Large front drive sprocket with visible cross spokes and hub.
+        track.addOrReplaceChild(
+                "drive_sprocket",
+                CubeListBuilder.create()
+                        .texOffs(144, 0).addBox(-4.8F, -4.8F, -3.2F, 9.6F, 9.6F, 6.4F)
+                        .texOffs(0, 0).addBox(-5.1F, -1.0F, -4.0F, 10.2F, 2.0F, 8.0F)
+                        .texOffs(0, 0).addBox(-5.1F, -4.0F, -1.0F, 10.2F, 8.0F, 2.0F)
+                        .texOffs(330, 90).addBox(-5.4F, -2.0F, -2.0F, 10.8F, 4.0F, 4.0F),
+                PartPose.offset(0.0F, 0.0F, 21.0F)
+        );
+
+        // Large recoil idler / tension wheel with a prominent center hub.
+        track.addOrReplaceChild(
+                "idler",
+                CubeListBuilder.create()
+                        .texOffs(144, 0).addBox(-4.8F, -4.8F, -3.2F, 9.6F, 9.6F, 6.4F)
+                        .texOffs(144, 0).addBox(-5.2F, -0.9F, -3.8F, 10.4F, 1.8F, 7.6F)
+                        .texOffs(144, 0).addBox(-5.2F, -3.8F, -0.9F, 10.4F, 7.6F, 1.8F)
+                        .texOffs(330, 90).addBox(-5.5F, -2.1F, -2.1F, 11.0F, 4.2F, 4.2F),
+                PartPose.offset(0.0F, 0.0F, -21.0F)
+        );
+
+        float[] roadZ = {-15.0F, -7.5F, 0.0F, 7.5F, 15.0F};
+        for (int i = 0; i < roadZ.length; i++) {
+            track.addOrReplaceChild(
+                    "road_wheel_" + i,
+                    CubeListBuilder.create()
+                            .texOffs(144, 0).addBox(-4.2F, -2.75F, -2.75F, 8.4F, 5.5F, 5.5F)
+                            .texOffs(330, 90).addBox(-4.6F, -1.0F, -1.0F, 9.2F, 2.0F, 2.0F),
+                    PartPose.offset(0.0F, 3.0F, roadZ[i])
+            );
+        }
+
+        float[] carrierZ = {-8.0F, 8.0F};
+        for (int i = 0; i < carrierZ.length; i++) {
+            track.addOrReplaceChild(
+                    "carrier_roller_" + i,
+                    CubeListBuilder.create()
+                            .texOffs(144, 0).addBox(-4.0F, -2.0F, -2.0F, 8.0F, 4.0F, 4.0F)
+                            .texOffs(330, 90).addBox(-4.4F, -0.8F, -0.8F, 8.8F, 1.6F, 1.6F),
+                    PartPose.offset(0.0F, -4.0F, carrierZ[i])
+            );
+        }
+
+        // Six animated grouser markers per straight run make belt travel visible.
+        for (int i = 0; i < TRACK_PAD_BASE_Z.length; i++) {
+            track.addOrReplaceChild(
+                    "top_pad_" + i,
+                    CubeListBuilder.create()
+                            .texOffs(0, 0).addBox(-4.8F, -0.6F, -1.5F, 9.6F, 1.2F, 3.0F),
+                    PartPose.offset(0.0F, -7.3F, TRACK_PAD_BASE_Z[i])
+            );
+            track.addOrReplaceChild(
+                    "bottom_pad_" + i,
+                    CubeListBuilder.create()
+                            .texOffs(0, 0).addBox(-4.8F, -0.6F, -1.5F, 9.6F, 1.2F, 3.0F),
+                    PartPose.offset(0.0F, 7.8F, TRACK_PAD_BASE_Z[i])
+            );
+        }
     }
 
     public static LayerDefinition createBodyLayer() {
@@ -72,40 +195,21 @@ public class BulldozerModel extends EntityModel<BulldozerRenderState> {
                 PartPose.offset(0.0F, 0.0F, 0.0F)
         );
 
-        // Left track crawler assembly: UV [0, 0]
-        undercarriage.addOrReplaceChild(
+        // Left track crawler assembly: open frame like the excavator undercarriage.
+        PartDefinition leftTrack = undercarriage.addOrReplaceChild(
                 "left_track",
-                CubeListBuilder.create()
-                        // Track belt loop: 8x12x50
-                        .texOffs(0, 0).addBox(-4.0F, -6.0F, -25.0F, 8.0F, 12.0F, 50.0F)
-                        // Front idler wheel (tension wheel)
-                        .texOffs(144, 0).addBox(-4.5F, -5.0F, 20.0F, 9.0F, 10.0F, 6.0F)
-                        // Rear drive sprocket
-                        .texOffs(144, 0).addBox(-4.5F, -5.0F, -26.0F, 9.0F, 10.0F, 6.0F)
-                        // Bottom road track rollers
-                        .texOffs(144, 0).addBox(-3.5F, 4.0F, -16.0F, 7.0F, 3.0F, 5.0F)
-                        .texOffs(144, 0).addBox(-3.5F, 4.0F, -6.0F, 7.0F, 3.0F, 5.0F)
-                        .texOffs(144, 0).addBox(-3.5F, 4.0F, 4.0F, 7.0F, 3.0F, 5.0F)
-                        .texOffs(144, 0).addBox(-3.5F, 4.0F, 14.0F, 7.0F, 3.0F, 5.0F)
-                        // Top carrier return roller
-                        .texOffs(144, 0).addBox(-3.5F, -7.0F, -1.0F, 7.0F, 2.0F, 4.0F),
-                PartPose.offset(-15.0F, 18.0F, 0.0F)
+                crawlerStaticGeometry(),
+                PartPose.offset(-15.5F, 18.0F, 0.0F)
         );
+        addCrawlerMovingParts(leftTrack);
 
-        // Right track crawler assembly: UV [0, 0]
-        undercarriage.addOrReplaceChild(
+        // Right track crawler assembly.
+        PartDefinition rightTrack = undercarriage.addOrReplaceChild(
                 "right_track",
-                CubeListBuilder.create()
-                        .texOffs(0, 0).addBox(-4.0F, -6.0F, -25.0F, 8.0F, 12.0F, 50.0F)
-                        .texOffs(144, 0).addBox(-4.5F, -5.0F, 20.0F, 9.0F, 10.0F, 6.0F)
-                        .texOffs(144, 0).addBox(-4.5F, -5.0F, -26.0F, 9.0F, 10.0F, 6.0F)
-                        .texOffs(144, 0).addBox(-3.5F, 4.0F, -16.0F, 7.0F, 3.0F, 5.0F)
-                        .texOffs(144, 0).addBox(-3.5F, 4.0F, -6.0F, 7.0F, 3.0F, 5.0F)
-                        .texOffs(144, 0).addBox(-3.5F, 4.0F, 4.0F, 7.0F, 3.0F, 5.0F)
-                        .texOffs(144, 0).addBox(-3.5F, 4.0F, 14.0F, 7.0F, 3.0F, 5.0F)
-                        .texOffs(144, 0).addBox(-3.5F, -7.0F, -1.0F, 7.0F, 2.0F, 4.0F),
-                PartPose.offset(15.0F, 18.0F, 0.0F)
+                crawlerStaticGeometry(),
+                PartPose.offset(15.5F, 18.0F, 0.0F)
         );
+        addCrawlerMovingParts(rightTrack);
 
         // ── 2. Main Body (Engine Compartment & ROPS Cab) ─────────────────
         PartDefinition mainBody = root.addOrReplaceChild(
@@ -277,6 +381,25 @@ public class BulldozerModel extends EntityModel<BulldozerRenderState> {
 
     @Override
     public void setupAnim(BulldozerRenderState state) {
+        animateCrawler(
+                state.leftTrackTravel,
+                this.leftDriveSprocket,
+                this.leftIdler,
+                this.leftRoadWheels,
+                this.leftCarrierRollers,
+                this.leftTopPads,
+                this.leftBottomPads
+        );
+        animateCrawler(
+                state.rightTrackTravel,
+                this.rightDriveSprocket,
+                this.rightIdler,
+                this.rightRoadWheels,
+                this.rightCarrierRollers,
+                this.rightTopPads,
+                this.rightBottomPads
+        );
+
         // Continuous blade lifting animation: positive bladeHeight lifts the blade up
         float armAngle = state.bladeHeight * 0.45F;
         this.pushArms.xRot = armAngle;
@@ -318,5 +441,45 @@ public class BulldozerModel extends EntityModel<BulldozerRenderState> {
         // Amber rotary safety warning beacon
         this.beaconReflector.yRot = state.beaconSpin;
         this.beaconReflector.visible = state.beaconFlash;
+    }
+
+    private static void animateCrawler(
+            float travel,
+            ModelPart driveSprocket,
+            ModelPart idler,
+            ModelPart[] roadWheels,
+            ModelPart[] carrierRollers,
+            ModelPart[] topPads,
+            ModelPart[] bottomPads
+    ) {
+        // Track travel is stored in model pixels. Wheel angular velocity therefore follows
+        // v/r and each side can rotate independently during differential steering.
+        driveSprocket.xRot = -travel / DRIVE_SPROCKET_RADIUS;
+        idler.xRot = -travel / IDLER_RADIUS;
+
+        for (ModelPart roadWheel : roadWheels) {
+            roadWheel.xRot = -travel / ROAD_WHEEL_RADIUS;
+        }
+        for (ModelPart carrierRoller : carrierRollers) {
+            carrierRoller.xRot = -travel / CARRIER_ROLLER_RADIUS;
+        }
+
+        // On a rolling crawler the top run travels forward relative to the chassis while
+        // the bottom ground-contact run travels backward. Wrapping keeps markers inside
+        // the straight sections and avoids moving the entire belt mesh.
+        for (int i = 0; i < TRACK_PAD_BASE_Z.length; i++) {
+            topPads[i].z = wrapTrackPad(TRACK_PAD_BASE_Z[i] + travel);
+            bottomPads[i].z = wrapTrackPad(TRACK_PAD_BASE_Z[i] - travel);
+        }
+    }
+
+    private static float wrapTrackPad(float z) {
+        while (z > TRACK_PAD_HALF_SPAN) {
+            z -= TRACK_PAD_SPAN;
+        }
+        while (z < -TRACK_PAD_HALF_SPAN) {
+            z += TRACK_PAD_SPAN;
+        }
+        return z;
     }
 }
