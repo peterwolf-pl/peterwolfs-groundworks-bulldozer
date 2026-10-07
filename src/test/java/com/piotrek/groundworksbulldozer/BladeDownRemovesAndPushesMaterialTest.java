@@ -164,10 +164,10 @@ class BladeDownRemovesAndPushesMaterialTest {
     }
 
     @Test
-    @DisplayName("Doubled blade capacity (1536 units / 3.0 m³) holds 2x material before spill")
+    @DisplayName("Blade capacity (3072 units / 6.0 m³) holds 6 blocks before spill")
     void testDoubledBladeCapacity() {
-        assertEquals(1536, BulldozerBladeController.MAX_BLADE_CAPACITY,
-                "Max blade capacity must be doubled to 1536 units (3.0 m³)");
+        assertEquals(3072, BulldozerBladeController.MAX_BLADE_CAPACITY,
+                "Max blade capacity must be 3072 units (6.0 m³)");
 
         TestGranularTerrain terrain = new TestGranularTerrain();
         // Create large multi-block soil ridge in front of blade
