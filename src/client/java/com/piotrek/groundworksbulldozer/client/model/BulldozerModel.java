@@ -57,7 +57,8 @@ public class BulldozerModel extends EntityModel<BulldozerRenderState> {
     private static final float IDLER_RADIUS = 4.8F;
     private static final float ROAD_WHEEL_RADIUS = 2.75F;
     private static final float CARRIER_ROLLER_RADIUS = 2.0F;
-    private static final int TRACK_LINK_COUNT = 36;
+    // Fewer, slightly separated links make crawler travel readable at normal game scale.
+    private static final int TRACK_LINK_COUNT = 30;
     private static final float TRACK_CENTER_FRONT_Z = 21.0F;
     private static final float TRACK_CENTER_REAR_Z = -21.0F;
     private static final float TRACK_LOOP_RADIUS = 6.3F;
@@ -106,7 +107,7 @@ public class BulldozerModel extends EntityModel<BulldozerRenderState> {
         return CubeListBuilder.create()
                 // Only the inner roller frame stays static. The belt itself is built from
                 // animated links, so no slab can hide motion on the top or end wraps.
-                .texOffs(144, 0).addBox(-1.2F, -2.0F, -22.5F, 2.4F, 5.0F, 45.0F)
+                .texOffs(144, 0).addBox(-0.8F, -1.8F, -22.5F, 1.6F, 4.2F, 45.0F)
                 // Rear recoil/tensioner body behind the idler.
                 .texOffs(144, 0).addBox(-3.2F, -1.8F, -19.0F, 6.4F, 3.6F, 9.0F)
                 .texOffs(144, 0).addBox(-3.6F, -2.2F, -17.2F, 7.2F, 4.4F, 1.2F)
@@ -165,7 +166,13 @@ public class BulldozerModel extends EntityModel<BulldozerRenderState> {
             track.addOrReplaceChild(
                     "track_link_" + i,
                     CubeListBuilder.create()
-                            .texOffs(0, 0).addBox(-5.0F, -0.75F, -1.8F, 10.0F, 1.5F, 3.6F),
+                            // Main shoe. Its length is intentionally shorter than link spacing,
+                            // leaving a visible moving gap between consecutive shoes.
+                            .texOffs(0, 0).addBox(-5.0F, -0.70F, -1.80F, 10.0F, 1.40F, 3.60F)
+                            // Raised transverse grouser on the outer face. Because every link
+                            // rotates around the sprocket/idler, this rib remains on the outside
+                            // of the belt on the upper run, lower run and both end wraps.
+                            .texOffs(0, 0).addBox(-5.35F, -1.10F, -0.50F, 10.70F, 0.45F, 1.00F),
                     PartPose.offset(0.0F, -TRACK_LOOP_RADIUS, TRACK_CENTER_REAR_Z)
             );
         }
@@ -210,11 +217,9 @@ public class BulldozerModel extends EntityModel<BulldozerRenderState> {
                         .texOffs(0, 76).addBox(-10.0F, -1.0F, 0.0F, 20.0F, 13.0F, 24.0F)
                         // Front radiator steel grille & guard: UV [124, 76]
                         .texOffs(124, 76).addBox(-9.5F, 0.0F, 24.0F, 19.0F, 12.0F, 2.0F)
-                        // Left cab-side mudguard / walkway. Trimmed to the cab footprint
-                        // so the animated upper crawler run stays fully visible fore and aft.
-                        .texOffs(144, 0).addBox(-19.0F, 10.0F, -16.0F, 8.0F, 2.0F, 20.0F)
-                        // Right cab-side mudguard / walkway.
-                        .texOffs(144, 0).addBox(11.0F, 10.0F, -16.0F, 8.0F, 2.0F, 20.0F)
+                        // Cab floor only. Keep it inside the ROPS/cab footprint so no flat
+                        // panel extends over either crawler and hides the animated upper run.
+                        .texOffs(144, 0).addBox(-10.0F, 10.0F, -16.0F, 20.0F, 2.0F, 20.0F)
                         // Rear fuel / hydraulic tank: UV [0, 76]
                         .texOffs(0, 76).addBox(-11.0F, 3.0F, -22.0F, 22.0F, 9.0F, 6.0F)
                         // Exhaust stack pipe: UV [374, 90]
