@@ -89,7 +89,7 @@ public class BulldozerRenderer extends EntityRenderer<GroundworksBulldozerEntity
     }
 
     private static float wrapTrackTravel(float travel) {
-        float loop = 96.0F;
+        float loop = BulldozerModel.TRACK_LOOP_LENGTH;
         if (travel > loop || travel < -loop) {
             travel %= loop;
         }
