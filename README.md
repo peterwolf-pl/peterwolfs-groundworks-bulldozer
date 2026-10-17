@@ -6,8 +6,9 @@
 
 ## Features
 
-### 🚜 Vehicle
+### 🚜 Vehicles
 - **Medium Tracked Bulldozer**: Heavy industrial crawler chassis with realistic caterpillar track frames, sprockets, idlers, and bottom track rollers.
+- **Heavy Mining Crawler Bulldozer (Cat D10T / D8T Class)**: Twice as large (`5.4F` x `4.4F`) with triangular elevated sprocket tracks (*High-Drive*), 44 animated track links, 8 pairs of bogie road wheels, massive 6.0m Semi-U blade with top rock guard, dual lift cylinders, 10,240-unit ($20.0\text{ m}^3$) capacity pushing 16+ full blocks at once, and heavy rear ripper (*zrywak*).
 - **Roll-Over Protective Cab (ROPS)**: Hollow safety cabin with panoramic tinted safety glass windows, driver seat, and instrument dashboard giving full forward visibility of the work area.
 - **Flashing Amber Beacon**: Working rotary warning strobe on the cab roof that spins and pulses while operating.
 - **Differential Track Steering**: Allows true in-place pivot turns when throttle is neutral, as well as smooth curvature turns during driving.
@@ -56,18 +57,21 @@ All controls are configurable in the Minecraft Key Binds settings menu:
 
 ## In-Cab HUD Telemetry
 
-When seated in the bulldozer cab, an instrument HUD displays:
-- Blade height in meters and active grading mode (`PODNIESIONY / Transport`, `RÓWNANIE / Grading`, `GŁĘBOKIE SKRAWANIE / Deep Cut`).
-- Operation status (`SPYCHANIE TERENU / Pushing` or `GOTOWA / Ready`).
-- Carried material type and volume progress bar (`units / 768 u = m³`).
-- Pitch and roll angles conforming to the ground terrain.
+When seated in the bulldozer cab, an instrument HUD displays in your client's language (English & Polish fully supported):
+- Machine title (`PETERWOLF'S GROUNDWORKS BULLDOZER` / `PETERWOLF'S HEAVY BULLDOZER (D10)`).
+- Blade height in meters and active grading mode (`RAISED / Transport`, `GRADING`, `DEEP CUTTING`).
+- Operation status (`PUSHING TERRAIN` or `READY`).
+- Real-time cutting edge ground clearance / depth relative to terrain.
+- Carried material type and volume progress bar (`units / capacity = m³`).
+- Pitch, roll, and blade angle.
 - Context-sensitive control hints.
 
 ---
 
 ## Commands
 
-- `/bulldozer spawn` — Spawns and boards a bulldozer at player position.
+- `/bulldozer spawn` — Spawns and boards the standard bulldozer at player position.
+- `/bulldozer spawn heavy` — Spawns and boards the heavy mining crawler bulldozer with triangular tracks.
 - `/bulldozer blade <height>` — Sets the blade height directly (`-0.60` to `0.80`).
 - `/bulldozer info` — Displays real-time telemetry (blade height, blade angle, carried material, track speeds, pitch, roll).
 - `/bulldozer clear` — Clears the blade's carried material buffer.

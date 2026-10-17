@@ -15,5 +15,22 @@
         "attenuation_distance": 14
       }
     ]
+  },
+  "heavy_engine_loop": {
+    "subtitle": "subtitles.pw_groundworks_bulldozer.heavy_engine_loop",
+    "sounds": [
+      {
+        "name": "pw_groundworks_bulldozer:heavy_engine_loop",
+        "attenuation_distance": 22
+      }
+    ]
+  },
+  "heavy_engine_load": {
+    "sounds": [
+      {
+        "name": "pw_groundworks_bulldozer:heavy_engine_load",
+        "attenuation_distance": 22
+      }
+    ]
   }
 }

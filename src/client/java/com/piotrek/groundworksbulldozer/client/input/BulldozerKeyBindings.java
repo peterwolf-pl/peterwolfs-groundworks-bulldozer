@@ -23,28 +23,28 @@ public final class BulldozerKeyBindings {
     public static void register() {
         KEY_BLADE_UP = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.pw_groundworks_bulldozer.blade_up",
-                InputConstants.Type.KEYBOARD,
+                InputConstants.Type.KEYSYM,
                 InputConstants.KEY_UP,
                 CATEGORY
         ));
 
         KEY_BLADE_DOWN = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.pw_groundworks_bulldozer.blade_down",
-                InputConstants.Type.KEYBOARD,
+                InputConstants.Type.KEYSYM,
                 InputConstants.KEY_DOWN,
                 CATEGORY
         ));
 
         KEY_BLADE_TILT_LEFT = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.pw_groundworks_bulldozer.blade_tilt_left",
-                InputConstants.Type.KEYBOARD,
+                InputConstants.Type.KEYSYM,
                 InputConstants.KEY_LEFT,
                 CATEGORY
         ));
 
         KEY_BLADE_TILT_RIGHT = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.pw_groundworks_bulldozer.blade_tilt_right",
-                InputConstants.Type.KEYBOARD,
+                InputConstants.Type.KEYSYM,
                 InputConstants.KEY_RIGHT,
                 CATEGORY
         ));

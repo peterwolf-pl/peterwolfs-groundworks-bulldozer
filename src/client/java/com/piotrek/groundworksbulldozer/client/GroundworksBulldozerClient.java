@@ -18,13 +18,18 @@ public class GroundworksBulldozerClient implements ClientModInitializer {
     public static final ModelLayerLocation BULLDOZER_LAYER =
             new ModelLayerLocation(GroundworksBulldozerMod.id("bulldozer"), "main");
 
+    public static final ModelLayerLocation HEAVY_BULLDOZER_LAYER =
+            new ModelLayerLocation(GroundworksBulldozerMod.id("heavy_bulldozer"), "main");
+
     @Override
     public void onInitializeClient() {
-        // Register entity model layer
+        // Register entity model layers
         ModelLayerRegistry.registerModelLayer(BULLDOZER_LAYER, BulldozerModel::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(HEAVY_BULLDOZER_LAYER, com.piotrek.groundworksbulldozer.client.model.HeavyBulldozerModel::createBodyLayer);
 
-        // Register entity renderer
+        // Register entity renderers
         EntityRendererRegistry.register(GroundworksBulldozerMod.BULLDOZER, BulldozerRenderer::new);
+        EntityRendererRegistry.register(GroundworksBulldozerMod.HEAVY_BULLDOZER, com.piotrek.groundworksbulldozer.client.render.HeavyBulldozerRenderer::new);
 
         // Register keybindings
         BulldozerKeyBindings.register();

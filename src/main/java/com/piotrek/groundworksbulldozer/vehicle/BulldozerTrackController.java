@@ -28,10 +28,41 @@ public class BulldozerTrackController {
     public static final double TRACK_LENGTH = 3.4D;
     private static final float YAW_RESPONSE_SCALE = 0.50F;
 
+    private final double maxSpeedConfig;
+    private final double accelerationConfig;
+    private final double brakingConfig;
+    private final double trackGaugeConfig;
+    private final double trackLengthConfig;
+    private final float yawResponseScaleConfig;
+
     private float leftTrackSpeed = 0.0F;
     private float rightTrackSpeed = 0.0F;
     private float vehiclePitch = 0.0F;
     private float vehicleRoll = 0.0F;
+
+    public BulldozerTrackController() {
+        this(TRACK_GAUGE, TRACK_LENGTH, MAX_SPEED, ACCELERATION, BRAKING, YAW_RESPONSE_SCALE);
+    }
+
+    public BulldozerTrackController(
+            double trackGauge,
+            double trackLength,
+            double maxSpeed,
+            double acceleration,
+            double braking,
+            float yawResponseScale
+    ) {
+        this.trackGaugeConfig = trackGauge;
+        this.trackLengthConfig = trackLength;
+        this.maxSpeedConfig = maxSpeed;
+        this.accelerationConfig = acceleration;
+        this.brakingConfig = braking;
+        this.yawResponseScaleConfig = yawResponseScale;
+    }
+
+    public double trackLength() {
+        return this.trackLengthConfig;
+    }
 
     public record TrackState(
             float leftSpeed,
@@ -39,7 +70,8 @@ public class BulldozerTrackController {
             Vec3 forwardDelta,
             float yawDeltaDegrees,
             float pitch,
-            float roll
+            float roll,
+            double groundSupportY
     ) {}
 
     public TrackState tick(
@@ -51,7 +83,7 @@ public class BulldozerTrackController {
             boolean onGround,
             boolean underHeavyLoad
     ) {
-        double maxSpeed = underHeavyLoad ? MAX_SPEED * 0.75D : MAX_SPEED;
+        double maxSpeed = underHeavyLoad ? maxSpeedConfig * 0.75D : maxSpeedConfig;
 
         double targetLeft;
         double targetRight;
@@ -81,8 +113,8 @@ public class BulldozerTrackController {
         // straight-line travel unchanged, but reduce chassis yaw to one third of
         // the previous value so pivot turns feel appropriately slow and massive.
         float yawDelta = (float) Math.toDegrees(
-                (leftTrackSpeed - rightTrackSpeed) / TRACK_GAUGE
-        ) * YAW_RESPONSE_SCALE;
+                (leftTrackSpeed - rightTrackSpeed) / trackGaugeConfig
+        ) * yawResponseScaleConfig;
 
         if (!onGround) {
             avgForward *= 0.5D;
@@ -96,8 +128,9 @@ public class BulldozerTrackController {
                 Math.cos(yawRad) * avgForward
         );
 
-        if (onGround && level != null) {
-            sampleTerrainOrientation(level, currentPos, currentYaw);
+        double groundSupportY = currentPos.y;
+        if (level != null) {
+            groundSupportY = sampleTerrainOrientation(level, currentPos, currentYaw);
         } else {
             vehiclePitch = Mth.lerp(0.1F, vehiclePitch, 0.0F);
             vehicleRoll = Mth.lerp(0.1F, vehicleRoll, 0.0F);
@@ -109,7 +142,8 @@ public class BulldozerTrackController {
                 forwardDelta,
                 yawDelta,
                 vehiclePitch,
-                vehicleRoll
+                vehicleRoll,
+                groundSupportY
         );
     }
 
@@ -118,7 +152,7 @@ public class BulldozerTrackController {
         if (Math.abs(diff) < 0.001F) {
             return target;
         }
-        float rate = (Math.abs(target) < 0.001F) ? (float) BRAKING : (float) ACCELERATION;
+        float rate = (Math.abs(target) < 0.001F) ? (float) brakingConfig : (float) accelerationConfig;
         if (diff > 0.0F) {
             return Math.min(current + rate, target);
         } else {
@@ -126,33 +160,74 @@ public class BulldozerTrackController {
         }
     }
 
-    private void sampleTerrainOrientation(ServerLevel level, Vec3 basePos, float yaw) {
+    private double sampleTerrainOrientation(ServerLevel level, Vec3 basePos, float yaw) {
         double yawRad = Math.toRadians(yaw);
         Vec3 heading = new Vec3(-Math.sin(yawRad), 0.0D, Math.cos(yawRad));
         Vec3 right = new Vec3(Math.cos(yawRad), 0.0D, Math.sin(yawRad));
 
-        double halfGauge = TRACK_GAUGE * 0.5D;
-        double halfLength = TRACK_LENGTH * 0.5D;
-        double maxAllowedGroundY = basePos.y + 0.40D;
+        double halfGauge = trackGaugeConfig * 0.5D;
+        double halfLength = trackLengthConfig * 0.5D;
+        double maxAllowedGroundY = basePos.y + 2.5D;
 
+        // Sample 6 track contact points: front, mid, rear across left and right tracks
         double frontLeftY = sampleGroundHeight(level, basePos.add(heading.scale(halfLength)).subtract(right.scale(halfGauge)), maxAllowedGroundY);
         double frontRightY = sampleGroundHeight(level, basePos.add(heading.scale(halfLength)).add(right.scale(halfGauge)), maxAllowedGroundY);
+
+        double midLeftY = sampleGroundHeight(level, basePos.subtract(right.scale(halfGauge)), maxAllowedGroundY);
+        double midRightY = sampleGroundHeight(level, basePos.add(right.scale(halfGauge)), maxAllowedGroundY);
+
         double rearLeftY = sampleGroundHeight(level, basePos.subtract(heading.scale(halfLength)).subtract(right.scale(halfGauge)), maxAllowedGroundY);
         double rearRightY = sampleGroundHeight(level, basePos.subtract(heading.scale(halfLength)).add(right.scale(halfGauge)), maxAllowedGroundY);
 
+        // Crawler tracks conform up to ±45° slopes and step drops.
+        // Scale the maximum contact drop to vehicle track length so heavy bulldozers (6.2m length)
+        // and standard bulldozers can descend steep slopes, scarps, and embankments without
+        // falsely clamping rear/front contact points to an artificially shallow floor.
+        double maxContactDrop = Math.max(2.5D, halfLength * 0.75D + 1.5D);
+        double supportFloor = basePos.y - maxContactDrop;
+        frontLeftY = Math.max(frontLeftY, supportFloor);
+        frontRightY = Math.max(frontRightY, supportFloor);
+        midLeftY = Math.max(midLeftY, supportFloor);
+        midRightY = Math.max(midRightY, supportFloor);
+        rearLeftY = Math.max(rearLeftY, supportFloor);
+        rearRightY = Math.max(rearRightY, supportFloor);
+
         double frontAvg = (frontLeftY + frontRightY) * 0.5D;
+        double midAvg = (midLeftY + midRightY) * 0.5D;
         double rearAvg = (rearLeftY + rearRightY) * 0.5D;
-        double leftAvg = (frontLeftY + rearLeftY) * 0.5D;
-        double rightAvg = (frontRightY + rearRightY) * 0.5D;
+        double leftAvg = (frontLeftY + midLeftY + rearLeftY) / 3.0D;
+        double rightAvg = (frontRightY + midRightY + rearRightY) / 3.0D;
 
-        double targetPitch = Math.toDegrees(Math.atan2(rearAvg - frontAvg, TRACK_LENGTH));
-        double targetRoll = Math.toDegrees(Math.atan2(leftAvg - rightAvg, TRACK_GAUGE));
+        // Real crawler pitch conforming to terrain supports:
+        // Positive pitch = nose down, negative pitch = nose up
+        double targetPitch;
+        double avgEnds = (frontAvg + rearAvg) * 0.5D;
+        if (midAvg > avgEnds + 0.20D) {
+            // Teetering on a ridge/crest: pitch forward or back depending on front vs rear
+            if (frontAvg < rearAvg) {
+                targetPitch = Math.toDegrees(Math.atan2(midAvg - frontAvg, halfLength));
+            } else {
+                targetPitch = Math.toDegrees(Math.atan2(rearAvg - midAvg, halfLength));
+            }
+        } else {
+            targetPitch = Math.toDegrees(Math.atan2(rearAvg - frontAvg, trackLengthConfig));
+        }
 
-        targetPitch = Mth.clamp(targetPitch, -30.0D, 30.0D);
-        targetRoll = Mth.clamp(targetRoll, -20.0D, 20.0D);
+        double targetRoll = Math.toDegrees(Math.atan2(leftAvg - rightAvg, trackGaugeConfig));
 
-        this.vehiclePitch = (float) Mth.lerp(0.2D, this.vehiclePitch, targetPitch);
-        this.vehicleRoll = (float) Mth.lerp(0.2D, this.vehicleRoll, targetRoll);
+        targetPitch = Mth.clamp(targetPitch, -45.0D, 45.0D);
+        targetRoll = Mth.clamp(targetRoll, -30.0D, 30.0D);
+
+        this.vehiclePitch = (float) Mth.lerp(0.25D, this.vehiclePitch, targetPitch);
+        this.vehicleRoll = (float) Mth.lerp(0.25D, this.vehicleRoll, targetRoll);
+
+        // Ground support baseline: front and rear idler footprint define the continuous slope.
+        // Single protruding incomplete blocks in the middle cannot launch the heavy machine up:
+        double groundSupport = avgEnds;
+        if (midAvg > avgEnds + 0.05D) {
+            groundSupport = avgEnds + Math.min(0.15D, (midAvg - avgEnds) * 0.35D);
+        }
+        return groundSupport;
     }
 
     /**
@@ -164,13 +239,13 @@ public class BulldozerTrackController {
      * Groundworks surface query and falling back to vanilla collision geometry.
      */
     public static double sampleGroundHeight(ServerLevel level, Vec3 pos) {
-        return sampleGroundHeight(level, pos, pos.y + 0.8D);
+        return sampleGroundHeight(level, pos, pos.y + 2.0D);
     }
 
     public static double sampleGroundHeight(ServerLevel level, Vec3 pos, double maxAllowedGroundY) {
-        BlockPos start = BlockPos.containing(pos.x, Math.min(pos.y + 0.35D, maxAllowedGroundY), pos.z);
+        BlockPos start = BlockPos.containing(pos.x, Math.min(pos.y + 0.5D, maxAllowedGroundY), pos.z);
 
-        for (int dy = 0; dy <= 4; dy++) {
+        for (int dy = 0; dy <= 12; dy++) {
             BlockPos check = start.below(dy);
 
             double surfaceY = GroundworksApi.getSurfaceWorldY(
@@ -199,6 +274,8 @@ public class BulldozerTrackController {
             }
         }
 
+        // No surface within the search. Hold the chassis datum instead of
+        // commanding a 12 m fall — that fall is what pitched the dozer into its own cut.
         return pos.y;
     }
 

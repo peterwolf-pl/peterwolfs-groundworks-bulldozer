@@ -57,8 +57,8 @@ public final class BulldozerEngineSoundController {
     private record EnginePair(EngineLoop idle, EngineLoop load) {
         private EnginePair(GroundworksBulldozerEntity bulldozer) {
             this(
-                    new EngineLoop(bulldozer, GroundworksBulldozerMod.ENGINE_LOOP, false),
-                    new EngineLoop(bulldozer, GroundworksBulldozerMod.ENGINE_LOAD, true)
+                    new EngineLoop(bulldozer, bulldozer.getEngineLoopSound(), false),
+                    new EngineLoop(bulldozer, bulldozer.getEngineLoadSound(), true)
             );
         }
 
@@ -108,7 +108,7 @@ public final class BulldozerEngineSoundController {
             );
 
             this.volume = loadLayer ? mix.loadVolume() : mix.volume();
-            this.pitch = loadLayer ? mix.loadPitch() : mix.pitch();
+            this.pitch = (loadLayer ? mix.loadPitch() : mix.pitch()) * bulldozer.getEnginePitchMultiplier();
         }
 
         private void stopNow() {

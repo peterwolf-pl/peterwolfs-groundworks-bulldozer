@@ -403,7 +403,9 @@ public class BulldozerModel extends EntityModel<BulldozerRenderState> {
         this.pushArms.xRot = armAngle;
 
         // Blade pitch rotation on push arm tip
-        this.blade.xRot = (float) Math.toRadians(state.bladeAngle) - armAngle;
+        // Counter-rotate so the moldboard stays upright while the arms lift, then add the ramp bite.
+        this.blade.xRot = -armAngle + (float) Math.toRadians(state.bladeAngle);
+        this.carriedMaterial.visible = false;
 
         // Real cylinder kinematics. The chassis trunnion is fixed and the rod-end target
         // moves with the C-frame. Both cylinder angle and chrome rod extension therefore
@@ -426,15 +428,8 @@ public class BulldozerModel extends EntityModel<BulldozerRenderState> {
         this.leftCylinderRod.zScale = rodScale;
         this.rightCylinderRod.zScale = rodScale;
 
-        // Live carried material visibility & dynamic volume scaling
-        if (state.carriedUnits > 0) {
-            this.carriedMaterial.visible = true;
-            float fill = Math.min(1.0F, state.fillRatio);
-            this.carriedMaterial.yScale = 0.35F + (fill * 0.65F);
-            this.carriedMaterial.zScale = 0.40F + (fill * 0.60F);
-        } else {
-            this.carriedMaterial.visible = false;
-        }
+        // Spoil is a separate mesh so it can wear the cargo block texture.
+        this.carriedMaterial.visible = false;
 
         // Amber rotary safety warning beacon
         this.beaconReflector.yRot = state.beaconSpin;

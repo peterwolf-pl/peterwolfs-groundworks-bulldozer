@@ -65,7 +65,7 @@ class GradingDepressionFillTest {
     }
 
     @Test
-    @DisplayName("Raised blade does not fill depressions")
+    @DisplayName("Raised blade in full transport position does not fill depressions")
     void raisedBladeDoesNotGrade() {
         TestGranularTerrain terrain = new TestGranularTerrain();
         GranularMaterial dirt = GranularMaterialRegistry.DIRT;
@@ -76,11 +76,11 @@ class GradingDepressionFillTest {
 
         BladeTransform prev = BladeTransform.compute(
                 new Vec3(0.0D, 65.0D, 0.0D),
-                0.0F, 0.0F, 0.0F, 0.40F, 0.0F
+                0.0F, 0.0F, 0.0F, 0.75F, 0.0F
         );
         BladeTransform curr = BladeTransform.compute(
                 new Vec3(0.0D, 65.0D, 0.30D),
-                0.0F, 0.0F, 0.0F, 0.40F, 0.0F
+                0.0F, 0.0F, 0.0F, 0.75F, 0.0F
         );
 
         BladeTickResult result = BulldozerBladeController.tick(
@@ -90,5 +90,35 @@ class GradingDepressionFillTest {
         assertEquals(0, result.unitsDeposited());
         assertEquals(carriedBefore, result.carriedUnitsAfter());
         assertEquals(worldBefore, terrain.countTotalWorldUnits());
+    }
+
+    @Test
+    @DisplayName("Lifting blade up spreads carried material in an even layer under the cutting edge")
+    void liftingBladeSpreadsLayerUnderCuttingEdge() {
+        TestGranularTerrain terrain = new TestGranularTerrain();
+        GranularMaterial dirt = GranularMaterialRegistry.DIRT;
+
+        // Ground is at Y=64.0 (half cell of 4 layers = 256 units)
+        terrain.createPile(new BlockPos(0, 64, 2), dirt, 4);
+        int worldBefore = terrain.countTotalWorldUnits();
+        int carriedBefore = 256;
+
+        // Blade raised to +0.20m to spread a layer
+        BladeTransform prev = BladeTransform.compute(
+                new Vec3(0.0D, 65.0D, 0.0D),
+                0.0F, 0.0F, 0.0F, 0.20F, 0.0F
+        );
+        BladeTransform curr = BladeTransform.compute(
+                new Vec3(0.0D, 65.0D, 0.30D),
+                0.0F, 0.0F, 0.0F, 0.20F, 0.0F
+        );
+
+        BladeTickResult result = BulldozerBladeController.tick(
+                terrain, prev, curr, carriedBefore, dirt
+        );
+
+        assertTrue(result.unitsDeposited() > 0, "Lifting blade must deposit and spread carried material");
+        assertEquals(worldBefore + carriedBefore, terrain.countTotalWorldUnits() + result.carriedUnitsAfter(),
+                "Volume must be strictly conserved while spreading");
     }
 }

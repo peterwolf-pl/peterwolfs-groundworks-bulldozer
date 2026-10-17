@@ -32,33 +32,33 @@ public final class BulldozerInputHandler {
         }
 
         if (client.player.getVehicle() instanceof GroundworksBulldozerEntity dozer) {
-            boolean inGame = client.mouseHandler != null && client.mouseHandler.isMouseGrabbed();
+            boolean inGame = client.mouseHandler != null && client.mouseHandler.isMouseGrabbed() && client.getWindow() != null;
 
             // Read driving inputs (WASD from KeyMapping, PlayerInput, or Direct Keyboard)
             boolean keyForward = (client.options.keyUp != null && client.options.keyUp.isDown())
                     || (client.player.input != null && client.player.input.keyPresses.forward())
-                    || (inGame && InputConstants.isKeyDown(InputConstants.KEY_W));
+                    || (inGame && InputConstants.isKeyDown(client.getWindow(), InputConstants.KEY_W));
             boolean keyBackward = (client.options.keyDown != null && client.options.keyDown.isDown())
                     || (client.player.input != null && client.player.input.keyPresses.backward())
-                    || (inGame && InputConstants.isKeyDown(InputConstants.KEY_S));
+                    || (inGame && InputConstants.isKeyDown(client.getWindow(), InputConstants.KEY_S));
             boolean keyLeft = (client.options.keyLeft != null && client.options.keyLeft.isDown())
                     || (client.player.input != null && client.player.input.keyPresses.left())
-                    || (inGame && InputConstants.isKeyDown(InputConstants.KEY_A));
+                    || (inGame && InputConstants.isKeyDown(client.getWindow(), InputConstants.KEY_A));
             boolean keyRight = (client.options.keyRight != null && client.options.keyRight.isDown())
                     || (client.player.input != null && client.player.input.keyPresses.right())
-                    || (inGame && InputConstants.isKeyDown(InputConstants.KEY_D));
+                    || (inGame && InputConstants.isKeyDown(client.getWindow(), InputConstants.KEY_D));
 
             // Read blade lift inputs (Arrow Up / Down)
             boolean bladeUp = (BulldozerKeyBindings.KEY_BLADE_UP != null && BulldozerKeyBindings.KEY_BLADE_UP.isDown())
-                    || (inGame && InputConstants.isKeyDown(InputConstants.KEY_UP));
+                    || (inGame && InputConstants.isKeyDown(client.getWindow(), InputConstants.KEY_UP));
             boolean bladeDown = (BulldozerKeyBindings.KEY_BLADE_DOWN != null && BulldozerKeyBindings.KEY_BLADE_DOWN.isDown())
-                    || (inGame && InputConstants.isKeyDown(InputConstants.KEY_DOWN));
+                    || (inGame && InputConstants.isKeyDown(client.getWindow(), InputConstants.KEY_DOWN));
 
             // Read blade tilt inputs (Arrow Left / Right)
             boolean tiltLeft = (BulldozerKeyBindings.KEY_BLADE_TILT_LEFT != null && BulldozerKeyBindings.KEY_BLADE_TILT_LEFT.isDown())
-                    || (inGame && InputConstants.isKeyDown(InputConstants.KEY_LEFT));
+                    || (inGame && InputConstants.isKeyDown(client.getWindow(), InputConstants.KEY_LEFT));
             boolean tiltRight = (BulldozerKeyBindings.KEY_BLADE_TILT_RIGHT != null && BulldozerKeyBindings.KEY_BLADE_TILT_RIGHT.isDown())
-                    || (inGame && InputConstants.isKeyDown(InputConstants.KEY_RIGHT));
+                    || (inGame && InputConstants.isKeyDown(client.getWindow(), InputConstants.KEY_RIGHT));
 
             float throttle = 0.0F;
             float steer = 0.0F;
