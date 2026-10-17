@@ -5,12 +5,13 @@ import com.mojang.math.Axis;
 import com.piotrek.groundworksbulldozer.GroundworksBulldozerMod;
 import com.piotrek.groundworksbulldozer.client.GroundworksBulldozerClient;
 import com.piotrek.groundworksbulldozer.client.model.BulldozerModel;
+import com.piotrek.groundworksbulldozer.client.model.SpoilHeapModel;
 import com.piotrek.groundworksbulldozer.entity.GroundworksBulldozerEntity;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.renderer.state.level.CameraRenderState;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 
@@ -25,6 +26,7 @@ public class BulldozerRenderer extends EntityRenderer<GroundworksBulldozerEntity
     public static final Identifier TEXTURE = GroundworksBulldozerMod.id("textures/entity/bulldozer.png");
 
     private final BulldozerModel model;
+    private final SpoilHeapModel spoil;
     private final Map<GroundworksBulldozerEntity, TrackAnimationState> trackAnimations = new WeakHashMap<>();
 
     private static final class TrackAnimationState {
@@ -36,6 +38,7 @@ public class BulldozerRenderer extends EntityRenderer<GroundworksBulldozerEntity
     public BulldozerRenderer(EntityRendererProvider.Context context) {
         super(context);
         this.model = new BulldozerModel(context.bakeLayer(GroundworksBulldozerClient.BULLDOZER_LAYER));
+        this.spoil = SpoilHeapModel.standard();
         this.shadowRadius = 1.8F;
     }
 
@@ -101,14 +104,14 @@ public class BulldozerRenderer extends EntityRenderer<GroundworksBulldozerEntity
         stack.pushPose();
 
         // Rotate heading (facing where tracks drive)
-        stack.rotateDegrees(Axis.YP, -state.baseYaw);
+        stack.mulPose(Axis.YP.rotationDegrees(-state.baseYaw));
 
         // Apply ground pitch and roll
         if (Math.abs(state.basePitch) > 0.01F) {
-            stack.rotateDegrees(Axis.XP, state.basePitch);
+            stack.mulPose(Axis.XP.rotationDegrees(state.basePitch));
         }
         if (Math.abs(state.baseRoll) > 0.01F) {
-            stack.rotateDegrees(Axis.ZP, state.baseRoll);
+            stack.mulPose(Axis.ZP.rotationDegrees(state.baseRoll));
         }
 
         // Standard Minecraft entity model coordinate transform
@@ -124,8 +127,22 @@ public class BulldozerRenderer extends EntityRenderer<GroundworksBulldozerEntity
                 RenderTypes.entityTranslucent(TEXTURE),
                 state.lightCoords,
                 OverlayTexture.NO_OVERLAY,
-                state.outlineColor
+                state.outlineColor,
+                null
         );
+        if (state.carriedUnits > 0) {
+            this.spoil.setupAnim(state);
+            collector.submitModel(
+                    this.spoil,
+                    state,
+                    stack,
+                    RenderTypes.entityCutout(SpoilHeapModel.texture(state.carriedMaterialId)),
+                    state.lightCoords,
+                    OverlayTexture.NO_OVERLAY,
+                    state.outlineColor,
+                null
+            );
+        }
 
         stack.popPose();
     }

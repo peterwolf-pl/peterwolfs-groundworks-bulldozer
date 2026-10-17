@@ -65,6 +65,20 @@ public final class BulldozerBladeController {
             int carriedUnitsBefore,
             GranularMaterial carriedMaterial
     ) {
+        return tick(terrain, prevTransform, currTransform, carriedUnitsBefore, carriedMaterial, MAX_BLADE_CAPACITY);
+    }
+
+    /**
+     * Executes one tick of blade physical interaction with Groundworks terrain.
+     */
+    public static BladeTickResult tick(
+            IGranularTerrainAccess terrain,
+            BladeTransform prevTransform,
+            BladeTransform currTransform,
+            int carriedUnitsBefore,
+            GranularMaterial carriedMaterial,
+            int maxCapacity
+    ) {
         if (prevTransform == null || currTransform == null) {
             return new BladeTickResult(0, 0, carriedUnitsBefore, carriedMaterial, false, List.of());
         }
@@ -117,46 +131,69 @@ public final class BulldozerBladeController {
                 Vec3 p1 = currEdge.get(e);
                 Vec3 pt = p0.lerp(p1, alpha);
 
-                // A. Shave high ground (Cut material in front of moldboard & above cutting edge)
-                BlockPos pos = BlockPos.containing(pt.x, pt.y, pt.z);
-                BlockPos above = pos.above();
-                BlockPos below = pos.below();
+                // A. Shave the full moldboard face, not a thin line of sample points.
+                // Adjacent samples on a 6 m blade are ~0.375 m apart, so a column
+                // sitting between them was previously left standing. Close that gap,
+                // and also look one block ahead so the hull cannot climb uncut dirt.
+                double bladeTopY = pt.y + currTransform.height();
+                Vec3 lateral = e + 1 < edgeCount
+                        ? currEdge.get(e + 1).subtract(pt)
+                        : (e > 0 ? pt.subtract(currEdge.get(e - 1)) : Vec3.ZERO);
+                double[] along = {0.0D, 0.5D};
+                double[] forwardOffsets = {0.0D, 0.55D, 1.05D};
 
-                List<BlockPos> candidates = new ArrayList<>(3);
-                if (pt.y + BladeTransform.DEFAULT_BLADE_HEIGHT > above.getY() - 0.2D) {
-                    candidates.add(above);
-                }
-                candidates.add(pos);
-                if (pt.y < pos.getY() + 0.35D) {
-                    candidates.add(below);
-                }
-
-                for (BlockPos targetPos : candidates) {
-                    if (processedBlocks.add(targetPos) && terrain.isDiggable(targetPos)) {
-                        GranularMaterial sourceMaterial = terrain.getMaterial(targetPos);
-                        if (sourceMaterial == GranularMaterial.EMPTY) {
-                            continue;
+                for (double alongT : along) {
+                    if (lateral.lengthSqr() < 1.0E-6D && alongT > 0.0D) {
+                        continue;
+                    }
+                    Vec3 alongPt = pt.add(lateral.scale(alongT));
+                    for (double fwd : forwardOffsets) {
+                        Vec3 samplePt = alongPt.add(currTransform.forward().scale(fwd));
+                        BlockPos pos = BlockPos.containing(samplePt.x, samplePt.y, samplePt.z);
+                        List<BlockPos> candidates = new ArrayList<>(3);
+                        candidates.add(pos);
+                        if (bladeTopY > pos.above().getY() + 0.05D) {
+                            candidates.add(pos.above());
+                        }
+                        if (bladeTopY > pos.above(2).getY() + 0.05D) {
+                            candidates.add(pos.above(2));
+                        }
+                        // Cutting edge inside the lower quarter also shaves the cell below.
+                        if (pt.y < pos.getY() + 0.30D) {
+                            candidates.add(pos.below());
                         }
 
-                        GranularMaterial requiredMaterial =
-                                currentMaterial == GranularMaterial.EMPTY
-                                        ? sourceMaterial
-                                        : currentMaterial;
+                        for (BlockPos targetPos : candidates) {
+                            if (!processedBlocks.add(targetPos) || !terrain.isDiggable(targetPos)) {
+                                continue;
+                            }
+                            GranularMaterial sourceMaterial = terrain.getMaterial(targetPos);
+                            if (sourceMaterial == GranularMaterial.EMPTY) {
+                                continue;
+                            }
 
-                        // A blade carry buffer is single-material. Foreign terrain
-                        // remains untouched until the current load is deposited.
-                        if (sourceMaterial.id() != requiredMaterial.id()) {
-                            continue;
-                        }
+                            GranularMaterial requiredMaterial =
+                                    currentMaterial == GranularMaterial.EMPTY
+                                            ? sourceMaterial
+                                            : currentMaterial;
 
-                        int toRemove = 128;
-                        ExcavationResult excavation = terrain.excavateMicrovoxelsAbove(
-                                targetPos,
-                                pt.y,
-                                toRemove,
-                                requiredMaterial
-                        );
-                        if (excavation.success()) {
+                            // A blade carry buffer is single-material. Foreign terrain
+                            // remains untouched until the current load is deposited.
+                            if (sourceMaterial.id() != requiredMaterial.id()) {
+                                continue;
+                            }
+
+                            // One full cell per sample. A 512 cap left the upper half
+                            // of a block standing, which then solidified into a pillar.
+                            ExcavationResult excavation = terrain.excavateMicrovoxelsAbove(
+                                    targetPos,
+                                    pt.y,
+                                    4096,
+                                    requiredMaterial
+                            );
+                            if (!excavation.success()) {
+                                continue;
+                            }
                             if (excavation.material().id() != requiredMaterial.id()) {
                                 throw new IllegalStateException(
                                         "Groundworks material filter violation: required="
@@ -168,56 +205,37 @@ public final class BulldozerBladeController {
                             int removed = excavation.unitsRemoved();
                             totalExcavated += removed;
                             affected.add(targetPos);
-
                             if (currentMaterial == GranularMaterial.EMPTY) {
                                 currentMaterial = excavation.material();
                             }
 
-                            // 1. Live carry buffer retention (holds up to 768 units = 1.5 m³ of rolling surcharge against moldboard)
-                            int liveSurchargeTarget = 768;
-                            int roomInSurcharge = Math.max(0, liveSurchargeTarget - currentUnits);
-                            int toCarry = (roomInSurcharge > 0)
-                                    ? Math.min(roomInSurcharge, Math.max(1, removed / 2))
-                                    : 0;
-                            currentUnits += toCarry;
-                            int toHeap = removed - toCarry;
+                            // Keep the rolling load on the blade. Do not deposit it
+                            // back into the cell that was just cut — depositWithOverflow
+                            // stacks upward and that is the pillar in the video.
+                            int room = Math.max(0, maxCapacity - currentUnits);
+                            int kept = Math.min(room, removed);
+                            currentUnits += kept;
+                            int overflow = removed - kept;
+                            if (overflow <= 0) {
+                                continue;
+                            }
 
-                            // 2. Active rolling surcharge / forward heap formation in front of the blade
-                            if (toHeap > 0) {
-                                Vec3 forwardPt = pt.add(currTransform.forward().scale(0.85D));
-                                BlockPos forwardPos = BlockPos.containing(forwardPt.x, forwardPt.y, forwardPt.z);
-                                if (forwardPos.equals(targetPos)) {
-                                    forwardPt = pt.add(currTransform.forward().scale(1.5D));
-                                    forwardPos = BlockPos.containing(forwardPt.x, forwardPt.y, forwardPt.z);
-                                }
-
-                                int pushed = terrain.deposit(forwardPos, currentMaterial, toHeap);
-                                if (pushed > 0) {
-                                    totalDeposited += pushed;
-                                    affected.add(forwardPos);
-                                    terrain.markSimulate(forwardPos);
-                                    toHeap -= pushed;
-                                }
-
-                                // 3. Lateral windrow spillage around wings if forward heap is full
-                                if (toHeap > 0) {
-                                    Vec3 spillPt = (e % 2 == 0)
-                                            ? currTransform.leftWingPoint().subtract(currTransform.right().scale(0.5D))
-                                            : currTransform.rightWingPoint().add(currTransform.right().scale(0.5D));
-                                    BlockPos spillPos = BlockPos.containing(spillPt.x, spillPt.y, spillPt.z);
-                                    int spilled = terrain.deposit(spillPos, currentMaterial, toHeap);
-                                    if (spilled > 0) {
-                                        totalDeposited += spilled;
-                                        affected.add(spillPos);
-                                        terrain.markSimulate(spillPos);
-                                        toHeap -= spilled;
-                                    }
-                                }
-
-                                // 4. Retain any undeposited units in carry buffer up to MAX_BLADE_CAPACITY to strictly conserve volume
-                                if (toHeap > 0) {
-                                    currentUnits += toHeap;
-                                }
+                            int placed = depositAhead(
+                                    terrain,
+                                    currTransform,
+                                    samplePt,
+                                    bladeTopY,
+                                    targetPos,
+                                    currentMaterial,
+                                    overflow,
+                                    e
+                            );
+                            if (placed > 0) {
+                                totalDeposited += placed;
+                                overflow -= placed;
+                            }
+                            if (overflow > 0) {
+                                currentUnits += overflow;
                             }
                         }
                     }
@@ -226,12 +244,11 @@ public final class BulldozerBladeController {
             }
         }
 
-        // ── 2. Grade Low Ground / Fill Depressions ──────────────────────────
-        // Material already carried in front of the moldboard is used first to
-        // fill low cells up to the current world-space cutting-edge grade.
-        // This is the actual cut-and-fill grading pass: high ground feeds the
-        // carry buffer, low ground consumes it, and every unit remains conserved.
-        if (!currTransform.isRaised()
+        // ── 2. Grade Low Ground / Spread Layer Under Raised Blade ──────────
+        // When not in full transport position (bladeHeight <= 0.65m), material carried in front of
+        // the moldboard flows smoothly underneath the cutting edge, laying down a flat, even
+        // layer/lift of soil equal to the clearance between the ground and the blade cutting edge.
+        if (!currTransform.isTransport()
                 && currentUnits > 0
                 && currentMaterial != GranularMaterial.EMPTY) {
 
@@ -284,13 +301,14 @@ public final class BulldozerBladeController {
         // The visible carried surcharge represents the rolling load in front of the moldboard.
         // Keep that load intact until the blade is physically full; only then can it escape
         // around the two wings.
-        if (currentUnits >= MAX_BLADE_CAPACITY && currentMaterial != GranularMaterial.EMPTY) {
-            int spillPerSide = 48;
+        if (currentUnits >= maxCapacity && currentMaterial != GranularMaterial.EMPTY) {
+            int spillPerSide = maxCapacity >= 6000 ? 96 : 48;
 
             // Left wing spill
             Vec3 leftSpillPt = currTransform.leftWingPoint().subtract(currTransform.right().scale(0.5D));
             BlockPos leftSpillPos = BlockPos.containing(leftSpillPt.x, leftSpillPt.y, leftSpillPt.z);
-            int leftDeposited = terrain.deposit(leftSpillPos, currentMaterial, Math.min(currentUnits, spillPerSide));
+            int leftDeposited = depositAtMostTwoHigh(
+                    terrain, leftSpillPos, currentMaterial, Math.min(currentUnits, spillPerSide));
             if (leftDeposited > 0) {
                 totalDeposited += leftDeposited;
                 currentUnits -= leftDeposited;
@@ -302,7 +320,8 @@ public final class BulldozerBladeController {
             if (currentUnits > 0) {
                 Vec3 rightSpillPt = currTransform.rightWingPoint().add(currTransform.right().scale(0.5D));
                 BlockPos rightSpillPos = BlockPos.containing(rightSpillPt.x, rightSpillPt.y, rightSpillPt.z);
-                int rightDeposited = terrain.deposit(rightSpillPos, currentMaterial, Math.min(currentUnits, spillPerSide));
+                int rightDeposited = depositAtMostTwoHigh(
+                        terrain, rightSpillPos, currentMaterial, Math.min(currentUnits, spillPerSide));
                 if (rightDeposited > 0) {
                     totalDeposited += rightDeposited;
                     currentUnits -= rightDeposited;
@@ -331,7 +350,136 @@ public final class BulldozerBladeController {
     }
 
     /**
-     * Deposits the entire carried blade load into a blade-width heap on the ground when reversing.
+     * Puts overflow ahead of the moldboard as a low pryzma: at most two blocks
+     * high, spread over two or three rows. Never back into the cell just cut.
+     */
+    private static int depositAhead(
+            IGranularTerrainAccess terrain,
+            BladeTransform transform,
+            Vec3 samplePt,
+            double bladeTopY,
+            BlockPos cutPos,
+            GranularMaterial material,
+            int units,
+            int edgeIndex
+    ) {
+        Set<BlockPos> affected = new HashSet<>();
+        int placed = depositPryzma(
+                terrain,
+                transform.cuttingEdgeCenter(),
+                transform.forward(),
+                transform.right(),
+                transform.width(),
+                material,
+                units,
+                cutPos,
+                affected
+        );
+        return placed;
+    }
+
+    /** Wing spill may fill the cell and one block above it. Never a tower. */
+    private static int depositAtMostTwoHigh(
+            IGranularTerrainAccess terrain,
+            BlockPos pos,
+            GranularMaterial material,
+            int units
+    ) {
+        if (units <= 0) {
+            return 0;
+        }
+        int placed = terrain.depositInCell(pos, material, units);
+        int left = units - placed;
+        if (left > 0) {
+            placed += terrain.depositInCell(pos.above(), material, left);
+        }
+        return placed;
+    }
+
+    /**
+     * A dozer spoil heap is a pad, not a wall. Two blocks is the ceiling.
+     * A large load uses three rows; a smaller load still uses two, never one.
+     */
+    private static int depositPryzma(
+            IGranularTerrainAccess terrain,
+            Vec3 center,
+            Vec3 forward,
+            Vec3 right,
+            double width,
+            GranularMaterial material,
+            int units,
+            BlockPos avoid,
+            Set<BlockPos> affected
+    ) {
+        if (units <= 0 || material == null || material == GranularMaterial.EMPTY) {
+            return 0;
+        }
+        int columns = Math.max(3, (int) Math.round(width));
+        int twoRowCap = columns * 2 * 2 * 512;
+        int rows = units > twoRowCap ? 3 : 2;
+        double spacing = Math.max(0.9D, width / columns);
+
+        List<BlockPos> bottoms = new ArrayList<>();
+        Set<BlockPos> seen = new HashSet<>();
+        for (int row = 0; row < rows; row++) {
+            double reach = 0.55D + row * 1.05D;
+            for (int col = 0; col < columns; col++) {
+                double side = (col - (columns - 1) * 0.5D) * spacing;
+                Vec3 pt = center.add(forward.scale(reach)).add(right.scale(side));
+                BlockPos base = BlockPos.containing(pt.x, pt.y, pt.z);
+                if (avoid != null && base.equals(avoid)) {
+                    base = new BlockPos(
+                            base.getX() + (int) Math.round(forward.x),
+                            base.getY(),
+                            base.getZ() + (int) Math.round(forward.z)
+                    );
+                }
+                if (avoid != null && base.equals(avoid)) {
+                    continue;
+                }
+                if (seen.add(base)) {
+                    bottoms.add(base);
+                }
+            }
+        }
+        if (bottoms.isEmpty()) {
+            return 0;
+        }
+
+        int remaining = units;
+        int placed = 0;
+        for (int guard = 0; guard < 64 && remaining > 0; guard++) {
+            int progress = 0;
+            for (int layer = 0; layer < 2 && remaining > 0; layer++) {
+                for (BlockPos base : bottoms) {
+                    if (remaining <= 0) {
+                        break;
+                    }
+                    BlockPos pos = layer == 0 ? base : base.above();
+                    if (avoid != null && pos.equals(avoid)) {
+                        continue;
+                    }
+                    int put = terrain.depositInCell(pos, material, Math.min(remaining, 128));
+                    if (put <= 0) {
+                        continue;
+                    }
+                    placed += put;
+                    remaining -= put;
+                    progress += put;
+                    affected.add(pos.immutable());
+                    terrain.markSimulate(pos);
+                }
+            }
+            if (progress == 0) {
+                break;
+            }
+        }
+        return placed;
+    }
+
+    /**
+     * Leaves the carried load as a low pryzma: at most two blocks high,
+     * two rows for a normal load and three when the load would not fit.
      */
     private static BladeTickResult depositReversingHeap(
             IGranularTerrainAccess terrain,
@@ -347,41 +495,21 @@ public final class BulldozerBladeController {
         Vec3 right = prevTransform.right();
         Vec3 center = prevTransform.cuttingEdgeCenter();
 
-        // 5 points spanning the full 3.0m width of the blade
-        Vec3 ptCenter = center.add(forward.scale(0.55D));
-        Vec3 ptMidLeft = center.subtract(right.scale(0.75D)).add(forward.scale(0.45D));
-        Vec3 ptMidRight = center.add(right.scale(0.75D)).add(forward.scale(0.45D));
-        Vec3 ptOuterLeft = center.subtract(right.scale(1.35D)).add(forward.scale(0.35D));
-        Vec3 ptOuterRight = center.add(right.scale(1.35D)).add(forward.scale(0.35D));
+        double width = prevTransform.width();
 
-        Vec3[] heapPoints = new Vec3[]{ptCenter, ptMidLeft, ptMidRight, ptOuterLeft, ptOuterRight};
-        double[] ratios = new double[]{0.32D, 0.24D, 0.24D, 0.10D, 0.10D};
-
-        for (int i = 0; i < heapPoints.length && currentUnits > 0; i++) {
-            Vec3 pt = heapPoints[i];
-            BlockPos targetPos = BlockPos.containing(pt.x, pt.y, pt.z);
-
-            int quota = (i == heapPoints.length - 1) ? currentUnits : (int) Math.round(carriedUnitsBefore * ratios[i]);
-            quota = Math.min(currentUnits, Math.max(1, quota));
-
-            int deposited = terrain.deposit(targetPos, carriedMaterial, quota);
-            if (deposited > 0) {
-                totalDeposited += deposited;
-                currentUnits -= deposited;
-                affected.add(targetPos);
-                terrain.markSimulate(targetPos);
-            }
-        }
-
-        // If any units remain due to column capacity, deposit remainder into center
-        if (currentUnits > 0) {
-            BlockPos centerPos = BlockPos.containing(ptCenter.x, ptCenter.y, ptCenter.z);
-            int deposited = terrain.deposit(centerPos, carriedMaterial, currentUnits);
-            totalDeposited += deposited;
-            currentUnits -= deposited;
-            affected.add(centerPos);
-            terrain.markSimulate(centerPos);
-        }
+        int piled = depositPryzma(
+                terrain,
+                center,
+                forward,
+                right,
+                width,
+                carriedMaterial,
+                currentUnits,
+                null,
+                affected
+        );
+        totalDeposited += piled;
+        currentUnits -= piled;
 
         return new BladeTickResult(
                 0,

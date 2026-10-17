@@ -6,7 +6,7 @@ import com.piotrek.groundworksbulldozer.item.BulldozerItem;
 import com.piotrek.groundworksbulldozer.network.BulldozerInputPayload;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
+import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.Registry;
@@ -45,6 +45,18 @@ public class GroundworksBulldozerMod implements ModInitializer {
                     .build(BULLDOZER_KEY)
     );
 
+    public static final ResourceKey<EntityType<?>> HEAVY_BULLDOZER_KEY =
+            ResourceKey.create(Registries.ENTITY_TYPE, id("heavy_bulldozer"));
+
+    public static final EntityType<com.piotrek.groundworksbulldozer.entity.HeavyBulldozerEntity> HEAVY_BULLDOZER = Registry.register(
+            BuiltInRegistries.ENTITY_TYPE,
+            HEAVY_BULLDOZER_KEY,
+            EntityType.Builder.of(com.piotrek.groundworksbulldozer.entity.HeavyBulldozerEntity::new, MobCategory.MISC)
+                    .sized(4.0F, 3.4F)
+                    .clientTrackingRange(10)
+                    .build(HEAVY_BULLDOZER_KEY)
+    );
+
     // ── Sound Registration ──────────────────────────────────────────
     public static final SoundEvent ENGINE_LOOP = Registry.register(
             BuiltInRegistries.SOUND_EVENT,
@@ -58,6 +70,18 @@ public class GroundworksBulldozerMod implements ModInitializer {
             SoundEvent.createFixedRangeEvent(id("engine_load"), 14.0F)
     );
 
+    public static final SoundEvent HEAVY_ENGINE_LOOP = Registry.register(
+            BuiltInRegistries.SOUND_EVENT,
+            id("heavy_engine_loop"),
+            SoundEvent.createFixedRangeEvent(id("heavy_engine_loop"), 22.0F)
+    );
+
+    public static final SoundEvent HEAVY_ENGINE_LOAD = Registry.register(
+            BuiltInRegistries.SOUND_EVENT,
+            id("heavy_engine_load"),
+            SoundEvent.createFixedRangeEvent(id("heavy_engine_load"), 22.0F)
+    );
+
     // ── Item Registration ────────────────────────────────────────────
     public static final ResourceKey<Item> BULLDOZER_ITEM_KEY =
             ResourceKey.create(Registries.ITEM, id("bulldozer"));
@@ -66,6 +90,17 @@ public class GroundworksBulldozerMod implements ModInitializer {
             BuiltInRegistries.ITEM,
             BULLDOZER_ITEM_KEY,
             new BulldozerItem(new Item.Properties().setId(BULLDOZER_ITEM_KEY).stacksTo(1))
+    );
+
+    public static final ResourceKey<Item> HEAVY_BULLDOZER_ITEM_KEY =
+            ResourceKey.create(Registries.ITEM, id("heavy_bulldozer"));
+
+    public static final com.piotrek.groundworksbulldozer.item.HeavyBulldozerItem HEAVY_BULLDOZER_ITEM = Registry.register(
+            BuiltInRegistries.ITEM,
+            HEAVY_BULLDOZER_ITEM_KEY,
+            new com.piotrek.groundworksbulldozer.item.HeavyBulldozerItem(
+                    new Item.Properties().setId(HEAVY_BULLDOZER_ITEM_KEY).stacksTo(1)
+            )
     );
 
     public static final ResourceKey<CreativeModeTab> TOOLS_AND_UTILITIES_TAB = ResourceKey.create(
@@ -78,7 +113,7 @@ public class GroundworksBulldozerMod implements ModInitializer {
         LOGGER.info("Initializing Peterwolf's Groundworks Bulldozer for MC 26.3...");
 
         // 1. Networking registration
-        PayloadTypeRegistry.serverboundPlay().register(
+        PayloadTypeRegistry.playC2S().register(
                 BulldozerInputPayload.TYPE, BulldozerInputPayload.CODEC
         );
 
@@ -105,8 +140,9 @@ public class GroundworksBulldozerMod implements ModInitializer {
         );
 
         // 3. Creative Tab placement
-        CreativeModeTabEvents.modifyOutputEvent(TOOLS_AND_UTILITIES_TAB).register(output -> {
+        ItemGroupEvents.modifyEntriesEvent(TOOLS_AND_UTILITIES_TAB).register(output -> {
             output.accept(BULLDOZER_ITEM);
+            output.accept(HEAVY_BULLDOZER_ITEM);
         });
 
         LOGGER.info("Peterwolf's Groundworks Bulldozer initialized successfully.");

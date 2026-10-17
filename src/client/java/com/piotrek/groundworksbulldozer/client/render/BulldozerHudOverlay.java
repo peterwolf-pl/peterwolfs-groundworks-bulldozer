@@ -1,15 +1,18 @@
 package com.piotrek.groundworksbulldozer.client.render;
 
 import com.piotrek.groundworksbulldozer.GroundworksBulldozerMod;
-import com.piotrek.groundworksbulldozer.blade.BladeTransform;
 import com.piotrek.groundworksbulldozer.entity.GroundworksBulldozerEntity;
+import com.piotrek.groundworksbulldozer.vehicle.GradeDatum;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+
+import java.util.Locale;
 
 /**
  * High-contrast in-cab instrument HUD displayed while operating the bulldozer.
@@ -38,7 +41,7 @@ public class BulldozerHudOverlay implements HudElement {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor extractor, DeltaTracker deltaTracker) {
+    public void render(GuiGraphics graphics, DeltaTracker deltaTracker) {
         Minecraft client = Minecraft.getInstance();
         if (client.player == null) return;
 
@@ -50,73 +53,75 @@ public class BulldozerHudOverlay implements HudElement {
         int x = 12;
         int y = 12;
         int width = 340;
-        int height = 96;
+        int height = 100;
 
         // Opaque high-contrast background. The old 0x88 alpha let the world texture
         // bleed through the glyphs and made the small Minecraft font hard to read.
-        extractor.fill(x - 6, y - 6, x + width, y + height, PANEL_BG);
-        extractor.outline(x - 6, y - 6, width + 6, height + 6, PANEL_BORDER);
+        graphics.fill(x - 6, y - 6, x + width, y + height, PANEL_BG);
+        graphics.renderOutline(x - 6, y - 6, width + 6, height + 6, PANEL_BORDER);
 
         // Header
-        extractor.text(font, "PETERWOLF'S GROUNDWORKS BULLDOZER", x, y, TEXT_AMBER, true);
+        graphics.drawString(font, dozer.getVehicleTitle(), x, y, TEXT_AMBER, true);
 
         float bladeHeight = dozer.getBladeHeight();
-        String heightStatus;
+        Component heightStatus;
         int heightColor;
         if (bladeHeight > 0.05F) {
-            heightStatus = "PODNIESIONY / TRANSPORT";
+            heightStatus = Component.translatable("hud.pw_groundworks_bulldozer.height_raised");
             heightColor = TEXT_GREEN;
         } else if (bladeHeight >= -0.15F) {
-            heightStatus = "RÓWNANIE";
+            heightStatus = Component.translatable("hud.pw_groundworks_bulldozer.height_grading");
             heightColor = TEXT_AMBER;
         } else {
-            heightStatus = "GŁĘBOKIE SKRAWANIE";
+            heightStatus = Component.translatable("hud.pw_groundworks_bulldozer.height_deep_cut");
             heightColor = TEXT_RED;
         }
 
-        extractor.text(
+        graphics.drawString(
                 font,
-                String.format("Lemiesz [↑/↓]: %.2f m", bladeHeight),
+                Component.translatable(
+                        "hud.pw_groundworks_bulldozer.blade_height",
+                        String.format(Locale.ROOT, "%.2f", bladeHeight)
+                ),
                 x,
                 y + 13,
                 TEXT_PRIMARY,
                 true
         );
-        extractor.text(font, heightStatus, x + 155, y + 13, heightColor, true);
+        graphics.drawString(font, heightStatus, x + 155, y + 13, heightColor, true);
 
-        // Compute the actual lowest point of the cutting edge from the synchronized
-        // vehicle pitch/roll and blade pose. BladeTransform treats entity Y as the
-        // local ground plane under the machine, so this value remains useful on slopes.
-        BladeTransform blade = BladeTransform.compute(
-                dozer.position(),
-                dozer.getYRot(),
-                dozer.getVehiclePitch(),
-                dozer.getVehicleRoll(),
-                dozer.getBladeHeight(),
-                dozer.getBladeAngle()
+        // After the tracks settle into the slot this reads about 0, not the lever.
+        // A latch more than a metre off the chassis is stale: show the lever, not air.
+        double edgeY = GradeDatum.edgeY(
+                dozer.getGradeDatumY(),
+                dozer.getY(),
+                bladeHeight
         );
+        double clearance = edgeY - dozer.getY();
 
-        double lowestEdgeY = blade.cuttingEdgePoints().stream()
-                .mapToDouble(point -> point.y)
-                .min()
-                .orElse(blade.cuttingEdgeCenter().y);
-        double clearance = lowestEdgeY - dozer.getY();
-
-        String clearanceText;
+        Component clearanceText;
         int clearanceColor;
         if (clearance >= 0.0D) {
-            clearanceText = String.format("Dolna krawędź nad gruntem: +%.2f m", clearance);
+            clearanceText = Component.translatable(
+                    "hud.pw_groundworks_bulldozer.clearance_above",
+                    String.format(Locale.ROOT, "%.2f", clearance)
+            );
             clearanceColor = clearance > 0.05D ? TEXT_GREEN : TEXT_AMBER;
         } else {
-            clearanceText = String.format("Dolna krawędź poniżej gruntu: %.2f m", clearance);
+            clearanceText = Component.translatable(
+                    "hud.pw_groundworks_bulldozer.clearance_below",
+                    String.format(Locale.ROOT, "%.2f", clearance)
+            );
             clearanceColor = TEXT_RED;
         }
-        extractor.text(font, clearanceText, x, y + 25, clearanceColor, true);
+        graphics.drawString(font, clearanceText, x, y + 25, clearanceColor, true);
 
-        String status = dozer.isPushing() ? "SPYCHANIE TERENU" : "GOTOWA";
-        extractor.text(
+        Component status = dozer.isPushing()
+                ? Component.translatable("hud.pw_groundworks_bulldozer.status_pushing")
+                : Component.translatable("hud.pw_groundworks_bulldozer.status_ready");
+        graphics.drawString(
                 font,
-                "Status: " + status,
+                Component.translatable("hud.pw_groundworks_bulldozer.status", status),
                 x + 220,
                 y + 25,
                 dozer.isPushing() ? TEXT_AMBER : TEXT_GREEN,
@@ -124,16 +129,22 @@ public class BulldozerHudOverlay implements HudElement {
         );
 
         // Carried material & volume
-        String matName = dozer.getCarriedMaterialId() > 0 && dozer.getCarriedMaterial() != null
+        Object matName = dozer.getCarriedMaterialId() > 0 && dozer.getCarriedMaterial() != null
                 ? dozer.getCarriedMaterial().name().toUpperCase()
-                : "BRAK";
+                : Component.translatable("hud.pw_groundworks_bulldozer.carried_empty");
         int units = dozer.getCarriedUnits();
-        int cap = com.piotrek.groundworksbulldozer.blade.BulldozerBladeController.MAX_BLADE_CAPACITY;
+        int cap = dozer.getMaxBladeCapacity();
         double m3 = (double) units / 512.0D;
 
-        extractor.text(
+        graphics.drawString(
                 font,
-                String.format("Urobek: %s   %d/%d u   %.3f m³", matName, units, cap, m3),
+                Component.translatable(
+                        "hud.pw_groundworks_bulldozer.carried",
+                        matName,
+                        units,
+                        cap,
+                        String.format(Locale.ROOT, "%.3f", m3)
+                ),
                 x,
                 y + 38,
                 TEXT_SECONDARY,
@@ -146,10 +157,10 @@ public class BulldozerHudOverlay implements HudElement {
         int barY = y + 51;
         float ratio = (float) units / (float) cap;
 
-        extractor.fill(x, barY, x + barWidth, barY + barHeight, BAR_BG);
+        graphics.fill(x, barY, x + barWidth, barY + barHeight, BAR_BG);
         int fillWidth = Math.round(barWidth * Math.min(1.0F, ratio));
         if (fillWidth > 0) {
-            extractor.fill(
+            graphics.fill(
                     x,
                     barY,
                     x + fillWidth,
@@ -157,9 +168,9 @@ public class BulldozerHudOverlay implements HudElement {
                     ratio > 0.8F ? BAR_FULL : BAR_FILL
             );
         }
-        extractor.text(
+        graphics.drawString(
                 font,
-                String.format("%.0f%%", ratio * 100.0F),
+                String.format(Locale.ROOT, "%.0f%%", ratio * 100.0F),
                 x + barWidth + 8,
                 barY - 2,
                 TEXT_PRIMARY,
@@ -167,13 +178,13 @@ public class BulldozerHudOverlay implements HudElement {
         );
 
         // Machine attitude
-        extractor.text(
+        graphics.drawString(
                 font,
-                String.format(
-                        "Pochylenie: %.1f°   Boczne: %.1f°   Kąt lemiesza: %.1f°",
-                        dozer.getVehiclePitch(),
-                        dozer.getVehicleRoll(),
-                        dozer.getBladeAngle()
+                Component.translatable(
+                        "hud.pw_groundworks_bulldozer.attitude",
+                        String.format(Locale.ROOT, "%.1f", dozer.getVehiclePitch()),
+                        String.format(Locale.ROOT, "%.1f", dozer.getVehicleRoll()),
+                        String.format(Locale.ROOT, "%.1f", dozer.getBladeAngle())
                 ),
                 x,
                 y + 63,
@@ -182,20 +193,33 @@ public class BulldozerHudOverlay implements HudElement {
         );
 
         // Controls
-        extractor.text(
+        graphics.drawString(
                 font,
-                "[W/S] Jazda   [A/D] Skręt   [↑/↓] Lemiesz góra/dół",
+                Component.translatable("hud.pw_groundworks_bulldozer.controls_drive"),
                 x,
                 y + 76,
                 TEXT_PRIMARY,
                 true
         );
-        extractor.text(
+        graphics.drawString(
                 font,
-                "[←/→] Przechył lemiesza",
+                Component.translatable("hud.pw_groundworks_bulldozer.controls_tilt"),
                 x,
                 y + 87,
                 TEXT_MUTED,
+                true
+        );
+
+        // Ripper status
+        Component ripperState = dozer.getRipperLift() > 0.35F
+                ? Component.translatable("hud.pw_groundworks_bulldozer.ripper_active")
+                : Component.translatable("hud.pw_groundworks_bulldozer.ripper_raised");
+        graphics.drawString(
+                font,
+                Component.translatable("hud.pw_groundworks_bulldozer.ripper_status", ripperState),
+                x + 160,
+                y + 87,
+                dozer.getRipperLift() > 0.35F ? TEXT_AMBER : TEXT_GREEN,
                 true
         );
     }

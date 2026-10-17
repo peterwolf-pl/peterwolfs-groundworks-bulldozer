@@ -29,5 +29,11 @@ public interface IGranularTerrainAccess {
 
     int deposit(BlockPos pos, GranularMaterial material, int units);
 
+    /**
+     * Deposit into this cell only. Must not walk upward when the cell is full.
+     * A full cell returns 0 so the caller can place the rest in the next row.
+     */
+    int depositInCell(BlockPos pos, GranularMaterial material, int units);
+
     void markSimulate(BlockPos pos);
 }

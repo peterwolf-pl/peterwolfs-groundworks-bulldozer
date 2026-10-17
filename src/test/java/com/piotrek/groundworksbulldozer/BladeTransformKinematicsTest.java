@@ -41,7 +41,43 @@ class BladeTransformKinematicsTest {
 
         assertEquals(63.70D, lowered.cuttingEdgeY(), 1e-3D, "Lowered blade edge Y must be 64 - 0.30 = 63.70");
         assertEquals(64.50D, raised.cuttingEdgeY(), 1e-3D, "Raised blade edge Y must be 64 + 0.50 = 64.50");
+        assertEquals(-0.30D, lowered.cuttingEdgeDepth(), 1e-3D);
+        assertEquals(0.50D, raised.cuttingEdgeDepth(), 1e-3D);
         assertTrue(raised.isRaised());
         assertFalse(lowered.isRaised());
+    }
+
+    @Test
+    @DisplayName("Nose-down pitch must not drop the cutting edge into a crater")
+    void noseDownPitchDoesNotDeepenTheCut() {
+        Vec3 base = new Vec3(0.0D, 64.0D, 0.0D);
+        BladeTransform noseDown = BladeTransform.compute(base, 0.0F, 40.0F, 0.0F, -0.60F, 0.0F, 6.0D, 1.8D, 4.2D, 17);
+
+        assertEquals(63.40D, noseDown.cuttingEdgeY(), 1e-3D,
+                "40 degree nose-down must not add armLength * sin(pitch) to the cut");
+        assertEquals(-0.60D, noseDown.cuttingEdgeDepth(), 1e-3D);
+        assertTrue(noseDown.forward().y > -0.05D,
+                "Moldboard must not aim the berm into the floor");
+    }
+
+    @Test
+    @DisplayName("Blade height on a pitched chassis stays a fixed world cut")
+    void bladeHeightIsDepthRelativeToTheChassisDatum() {
+        BladeTransform cut = BladeTransform.compute(
+                new Vec3(0.0D, 64.0D, 0.0D),
+                0.0F, 12.0F, 0.0F, -0.30F, 0.0F,
+                6.0D, 1.8D, 4.2D, 17
+        );
+
+        assertEquals(-0.30D, cut.cuttingEdgeDepth(), 1e-3D);
+        assertEquals(63.70D, cut.cuttingEdgeY(), 1e-3D,
+                "Pitch must not move a 4.2 m arm off the chassis datum");
+    }
+
+    @Test
+    @DisplayName("Positive roll raises the left wing, matching left-high track convention")
+    void positiveRollRaisesTheLeftWing() {
+        BladeTransform rolled = BladeTransform.compute(new Vec3(0.0D, 64.0D, 0.0D), 0.0F, 0.0F, 10.0F, 0.0F, 0.0F);
+        assertTrue(rolled.leftWingPoint().y > rolled.rightWingPoint().y);
     }
 }

@@ -4,7 +4,6 @@ import com.piotrek.groundworksbulldozer.GroundworksBulldozerMod;
 import com.piotrek.groundworksbulldozer.entity.GroundworksBulldozerEntity;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
-import net.fabricmc.fabric.api.client.gametest.v1.context.TestServerConnection;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestServerContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
 import net.fabricmc.fabric.api.client.gametest.v1.screenshot.TestScreenshotOptions;
@@ -44,7 +43,6 @@ public final class BulldozerVisualGameTest implements FabricClientGameTest {
                 .create()) {
 
             TestServerContext server = singleplayer.getServer();
-            TestServerConnection connection = singleplayer.getConnection();
 
             configureWorld(server);
             setupViewingPlatform(server);
@@ -61,28 +59,28 @@ public final class BulldozerVisualGameTest implements FabricClientGameTest {
                 dozerHolder[0] = dozer;
             });
 
-            connection.waitForChunksRender();
+            singleplayer.getClientWorld().waitForChunksRender();
             context.waitTicks(160);
 
             // ── Scene 1: Isometric Profile (Front-Left with Blade & Tracks) ──
             server.runCommand("teleport @a -4.8 182.8 5.2 -136 15");
             context.waitTicks(10);
-            capture(context, connection, "bulldozer_01_profile_isometric");
+            capture(context, "bulldozer_01_profile_isometric");
 
             // ── Scene 2: Front Blade & Hydraulic Lift Cylinders Close-Up ─────
             server.runCommand("teleport @a 0.0 181.8 4.2 180 12");
             context.waitTicks(10);
-            capture(context, connection, "bulldozer_02_front_blade_and_cylinders");
+            capture(context, "bulldozer_02_front_blade_and_cylinders");
 
             // ── Scene 3: Cabin, Amber Beacon & Exhaust Stack ─────────────────
             server.runCommand("teleport @a -2.5 182.6 1.5 -135 8");
             context.waitTicks(10);
-            capture(context, connection, "bulldozer_03_cab_and_beacon");
+            capture(context, "bulldozer_03_cab_and_beacon");
 
             // ── Scene 4: Crawler Tracks & Sprockets ──────────────────────────
             server.runCommand("teleport @a -4.2 181.2 0.5 -90 8");
             context.waitTicks(10);
-            capture(context, connection, "bulldozer_04_tracks_and_rollers");
+            capture(context, "bulldozer_04_tracks_and_rollers");
 
             // ── Scene 5: Operator Seated Inside Glass Cab (Exterior View) ────
             server.runOnServer(minecraftServer -> {
@@ -94,12 +92,12 @@ public final class BulldozerVisualGameTest implements FabricClientGameTest {
             context.waitTicks(10);
             server.runCommand("teleport @a -2.8 182.8 3.5 -135 12");
             context.waitTicks(10);
-            capture(context, connection, "bulldozer_05_player_in_glass_cab");
+            capture(context, "bulldozer_05_player_in_glass_cab");
 
             // ── Scene 6: Operator Work Area View through Windshield ──────────
             server.runCommand("teleport @a 0.0 182.35 0.8 0 14");
             context.waitTicks(10);
-            capture(context, connection, "bulldozer_06_in_cab_blade_view");
+            capture(context, "bulldozer_06_in_cab_blade_view");
 
             // ── Scene 7: Lowered Blade in Grading Stance ─────────────────────
             server.runOnServer(minecraftServer -> {
@@ -112,7 +110,7 @@ public final class BulldozerVisualGameTest implements FabricClientGameTest {
             context.waitTicks(15);
             server.runCommand("teleport @a 3.5 182.2 4.2 145 16");
             context.waitTicks(10);
-            capture(context, connection, "bulldozer_07_blade_lowered_grading");
+            capture(context, "bulldozer_07_blade_lowered_grading");
 
             // ── Scene 8: Dismount & Targetability / Removal Verification ────
             server.runOnServer(minecraftServer -> {
@@ -154,9 +152,8 @@ public final class BulldozerVisualGameTest implements FabricClientGameTest {
         });
     }
 
-    private static void capture(ClientGameTestContext context, TestServerConnection connection, String name) {
+    private static void capture(ClientGameTestContext context, String name) {
         context.waitTicks(3);
-        connection.waitForClientboundPackets();
         context.takeScreenshot(TestScreenshotOptions.of(name)
                 .disableCounterPrefix()
                 .withSize(854, 480)

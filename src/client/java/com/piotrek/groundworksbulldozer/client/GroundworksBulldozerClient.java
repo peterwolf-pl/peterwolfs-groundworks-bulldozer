@@ -10,7 +10,7 @@ import com.piotrek.groundworksbulldozer.client.sound.BulldozerEngineSoundControl
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
-import net.fabricmc.fabric.api.client.rendering.v1.ModelLayerRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 
 public class GroundworksBulldozerClient implements ClientModInitializer {
@@ -18,13 +18,18 @@ public class GroundworksBulldozerClient implements ClientModInitializer {
     public static final ModelLayerLocation BULLDOZER_LAYER =
             new ModelLayerLocation(GroundworksBulldozerMod.id("bulldozer"), "main");
 
+    public static final ModelLayerLocation HEAVY_BULLDOZER_LAYER =
+            new ModelLayerLocation(GroundworksBulldozerMod.id("heavy_bulldozer"), "main");
+
     @Override
     public void onInitializeClient() {
-        // Register entity model layer
-        ModelLayerRegistry.registerModelLayer(BULLDOZER_LAYER, BulldozerModel::createBodyLayer);
+        // Register entity model layers
+        EntityModelLayerRegistry.registerModelLayer(BULLDOZER_LAYER, BulldozerModel::createBodyLayer);
+        EntityModelLayerRegistry.registerModelLayer(HEAVY_BULLDOZER_LAYER, com.piotrek.groundworksbulldozer.client.model.HeavyBulldozerModel::createBodyLayer);
 
-        // Register entity renderer
+        // Register entity renderers
         EntityRendererRegistry.register(GroundworksBulldozerMod.BULLDOZER, BulldozerRenderer::new);
+        EntityRendererRegistry.register(GroundworksBulldozerMod.HEAVY_BULLDOZER, com.piotrek.groundworksbulldozer.client.render.HeavyBulldozerRenderer::new);
 
         // Register keybindings
         BulldozerKeyBindings.register();

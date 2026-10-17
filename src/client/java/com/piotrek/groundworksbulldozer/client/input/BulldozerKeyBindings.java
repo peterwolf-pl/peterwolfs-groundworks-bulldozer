@@ -2,7 +2,7 @@ package com.piotrek.groundworksbulldozer.client.input;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.piotrek.groundworksbulldozer.GroundworksBulldozerMod;
-import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.KeyMapping;
 
 /**
@@ -21,30 +21,30 @@ public final class BulldozerKeyBindings {
     private BulldozerKeyBindings() {}
 
     public static void register() {
-        KEY_BLADE_UP = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+        KEY_BLADE_UP = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 "key.pw_groundworks_bulldozer.blade_up",
-                InputConstants.Type.KEYBOARD,
+                InputConstants.Type.KEYSYM,
                 InputConstants.KEY_UP,
                 CATEGORY
         ));
 
-        KEY_BLADE_DOWN = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+        KEY_BLADE_DOWN = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 "key.pw_groundworks_bulldozer.blade_down",
-                InputConstants.Type.KEYBOARD,
+                InputConstants.Type.KEYSYM,
                 InputConstants.KEY_DOWN,
                 CATEGORY
         ));
 
-        KEY_BLADE_TILT_LEFT = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+        KEY_BLADE_TILT_LEFT = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 "key.pw_groundworks_bulldozer.blade_tilt_left",
-                InputConstants.Type.KEYBOARD,
+                InputConstants.Type.KEYSYM,
                 InputConstants.KEY_LEFT,
                 CATEGORY
         ));
 
-        KEY_BLADE_TILT_RIGHT = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+        KEY_BLADE_TILT_RIGHT = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 "key.pw_groundworks_bulldozer.blade_tilt_right",
-                InputConstants.Type.KEYBOARD,
+                InputConstants.Type.KEYSYM,
                 InputConstants.KEY_RIGHT,
                 CATEGORY
         ));

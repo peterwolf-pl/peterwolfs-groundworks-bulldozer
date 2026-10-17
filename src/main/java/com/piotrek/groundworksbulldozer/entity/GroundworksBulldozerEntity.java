@@ -2,12 +2,15 @@ package com.piotrek.groundworksbulldozer.entity;
 
 import com.piotrek.groundworks.api.material.GranularMaterial;
 import com.piotrek.groundworks.api.material.GranularMaterialRegistry;
+import com.piotrek.groundworks.api.excavation.ExcavationResult;
 import com.piotrek.groundworksbulldozer.GroundworksBulldozerMod;
 import com.piotrek.groundworksbulldozer.blade.BladeTransform;
 import com.piotrek.groundworksbulldozer.blade.BulldozerBladeController;
 import com.piotrek.groundworksbulldozer.blade.BulldozerBladeController.BladeTickResult;
 import com.piotrek.groundworksbulldozer.integration.groundworks.GroundworksBulldozerAdapter;
 import com.piotrek.groundworksbulldozer.vehicle.BulldozerTrackController;
+import com.piotrek.groundworksbulldozer.vehicle.GradeDatum;
+import com.piotrek.groundworksbulldozer.vehicle.GradePass;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -25,10 +28,10 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.InterpolationHandler;
-import net.minecraft.world.entity.LinearInterpolationHandler;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -36,7 +39,12 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.sounds.SoundEvent;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Server-authoritative tracked bulldozer vehicle entity.
@@ -51,6 +59,7 @@ import org.jetbrains.annotations.Nullable;
  * </ul>
  */
 public class GroundworksBulldozerEntity extends Entity {
+    private final InterpolationHandler interpolation = new InterpolationHandler(this, 3);
 
     // ── Blade Limits ─────────────────────────────────────────────────
     public static final float MIN_BLADE_HEIGHT = -0.60F; // Deep trenching / cutting
@@ -79,13 +88,173 @@ public class GroundworksBulldozerEntity extends Entity {
             SynchedEntityData.defineId(GroundworksBulldozerEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> ENGINE_RUNNING =
             SynchedEntityData.defineId(GroundworksBulldozerEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Float> RIPPER_LIFT =
+            SynchedEntityData.defineId(GroundworksBulldozerEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Float> GRADE_DATUM =
+            SynchedEntityData.defineId(GroundworksBulldozerEntity.class, EntityDataSerializers.FLOAT);
 
     // ── Subsystems ───────────────────────────────────────────────────
-    private final BulldozerTrackController trackController = new BulldozerTrackController();
+    protected final BulldozerTrackController trackController = createTrackController();
+
+    protected BulldozerTrackController createTrackController() {
+        return new BulldozerTrackController();
+    }
+
+    public int getMaxBladeCapacity() {
+        return BulldozerBladeController.MAX_BLADE_CAPACITY;
+    }
+
+    public double getBladeWidth() {
+        return BladeTransform.DEFAULT_BLADE_WIDTH;
+    }
+
+    public double getBladeHeightDimension() {
+        return BladeTransform.DEFAULT_BLADE_HEIGHT;
+    }
+
+    public double getArmLength() {
+        return BladeTransform.MOUNT_FORWARD_OFFSET;
+    }
+
+    /** Distance the whole machine must travel before a blade command returns to zero. */
+    public double getVehicleLength() {
+        return trackController.trackLength();
+    }
+
+    public int getNumEdgeSamples() {
+        return BladeTransform.NUM_EDGE_SAMPLES;
+    }
+
+    public BladeTransform computeBladeTransform(
+            Vec3 pos,
+            float yaw,
+            float pitch,
+            float roll,
+            float height,
+            float angle
+    ) {
+        return BladeTransform.compute(
+                pos,
+                yaw,
+                pitch,
+                roll,
+                height,
+                angle,
+                getBladeWidth(),
+                getBladeHeightDimension(),
+                getArmLength(),
+                getNumEdgeSamples()
+        );
+    }
+
+    protected Item getDropItem() {
+        return GroundworksBulldozerMod.BULLDOZER_ITEM;
+    }
+
+    public String getVehicleName() {
+        return "PETERWOLF'S GROUNDWORKS BULLDOZER";
+    }
+
+    public net.minecraft.network.chat.Component getVehicleTitle() {
+        return net.minecraft.network.chat.Component.translatable("hud.pw_groundworks_bulldozer.title");
+    }
+
+    public float getEnginePitchMultiplier() {
+        return 1.0F;
+    }
+
+    public SoundEvent getEngineLoopSound() {
+        return GroundworksBulldozerMod.ENGINE_LOOP;
+    }
+
+    public SoundEvent getEngineLoadSound() {
+        return GroundworksBulldozerMod.ENGINE_LOAD;
+    }
+
+    protected List<Vec3> getExhaustWorldPositions() {
+        double yawRad = Math.toRadians(this.getYRot());
+        Vec3 forward = new Vec3(-Math.sin(yawRad), 0.0D, Math.cos(yawRad));
+        Vec3 right = new Vec3(Math.cos(yawRad), 0.0D, Math.sin(yawRad));
+        Vec3 up = new Vec3(0.0D, 1.0D, 0.0D);
+
+        // Standard bulldozer single stack at X = +0.45m, Z = +0.58m, Y = +2.50m
+        Vec3 pos = this.position()
+                .add(forward.scale(0.58D))
+                .add(right.scale(0.45D))
+                .add(up.scale(2.50D));
+        return List.of(pos);
+    }
+
+    protected void spawnExhaustParticles() {
+        float speed = Math.max(Math.abs(getTrackLeftSpeed()), Math.abs(getTrackRightSpeed()));
+        boolean pushing = isPushing();
+        float fillRatio = (float) getCarriedUnits() / (float) getMaxBladeCapacity();
+        float load = Math.max(speed / 0.12F, pushing ? 0.75F + (fillRatio * 0.25F) : 0.08F);
+
+        List<Vec3> exhausts = getExhaustWorldPositions();
+        for (Vec3 pos : exhausts) {
+            spawnExhaustForPipe(pos, load, pushing);
+        }
+    }
+
+    private void spawnExhaustForPipe(Vec3 pos, float load, boolean pushing) {
+        double yawRad = Math.toRadians(this.getYRot());
+        Vec3 forward = new Vec3(-Math.sin(yawRad), 0.0D, Math.cos(yawRad));
+
+        if (pushing || load >= 0.85F) {
+            // Overload / active earth pushing: dense dark/black diesel smoke billows out and trails back
+            this.level().addParticle(
+                    ParticleTypes.LARGE_SMOKE,
+                    pos.x, pos.y + 0.05D, pos.z,
+                    (Math.random() - 0.5D) * 0.03D - forward.x * 0.02D,
+                    0.09D + Math.random() * 0.04D,
+                    (Math.random() - 0.5D) * 0.03D - forward.z * 0.02D
+            );
+            this.level().addParticle(
+                    ParticleTypes.SMOKE,
+                    pos.x, pos.y + 0.05D, pos.z,
+                    (Math.random() - 0.5D) * 0.02D - forward.x * 0.02D,
+                    0.07D + Math.random() * 0.03D,
+                    (Math.random() - 0.5D) * 0.02D - forward.z * 0.02D
+            );
+        } else if (load > 0.35F) {
+            // Working / driving: medium grey smoke
+            if (this.tickCount % 2 == 0) {
+                this.level().addParticle(
+                        ParticleTypes.SMOKE,
+                        pos.x, pos.y + 0.05D, pos.z,
+                        (Math.random() - 0.5D) * 0.02D - forward.x * 0.01D,
+                        0.06D + Math.random() * 0.02D,
+                        (Math.random() - 0.5D) * 0.02D - forward.z * 0.01D
+                );
+            }
+        } else {
+            // Idle / low load: soft rhythmic light white smoke puff
+            if (this.tickCount % 3 == 0) {
+                this.level().addParticle(
+                        ParticleTypes.WHITE_SMOKE,
+                        pos.x, pos.y + 0.05D, pos.z,
+                        (Math.random() - 0.5D) * 0.01D,
+                        0.035D + Math.random() * 0.015D,
+                        (Math.random() - 0.5D) * 0.01D
+                );
+            }
+        }
+    }
 
     // ── Server-Authoritative State ────────────────────────────────────
     private float bladeHeight = DEFAULT_BLADE_HEIGHT;
     private float bladeAngle = 0.0F;
+    private boolean gradePassActive;
+    private boolean gradePassLatchOrigin;
+    private double gradePassOriginY = Double.NaN;
+    private float gradePassCommand;
+    private double gradePassTraveled;
+    private double gradeCutY;
+    private double gradeChassisY;
+    private float ripperLift = 0.0F;
+    /** Horizontal grade the blade is cutting. Does not follow the chassis down into that cut. */
+    private double gradeDatumY = Double.NaN;
 
     @Nullable
     private BladeTransform previousBladeTransform;
@@ -111,8 +280,8 @@ public class GroundworksBulldozerEntity extends Entity {
     }
 
     @Override
-    protected InterpolationHandler createInterpolationHandler() {
-        return LinearInterpolationHandler.create(this, 3);
+    public InterpolationHandler getInterpolation() {
+        return interpolation;
     }
 
     @Override
@@ -127,6 +296,8 @@ public class GroundworksBulldozerEntity extends Entity {
         builder.define(VEHICLE_ROLL, 0.0F);
         builder.define(IS_PUSHING, false);
         builder.define(ENGINE_RUNNING, false);
+        builder.define(RIPPER_LIFT, 0.0F);
+        builder.define(GRADE_DATUM, 0.0F);
     }
 
     // ── Input & Control Setters ──────────────────────────────────────
@@ -146,6 +317,9 @@ public class GroundworksBulldozerEntity extends Entity {
         super.tick();
 
         if (this.level().isClientSide()) {
+            if (this.isEngineRunning()) {
+                spawnExhaustParticles();
+            }
             return;
         }
 
@@ -184,15 +358,27 @@ public class GroundworksBulldozerEntity extends Entity {
         boolean hasDriver = driver != null;
         this.entityData.set(ENGINE_RUNNING, hasDriver);
 
-        // 2. Smooth blade height & angle kinematics
-        if (Math.abs(inputBladeLift) > 0.01F) {
+        // 2. Smooth blade & ripper kinematics
+        boolean adjustingBlade = Math.abs(inputBladeLift) > 0.01F;
+        if (adjustingBlade) {
             bladeHeight = Mth.clamp(bladeHeight + inputBladeLift * LIFT_SPEED, MIN_BLADE_HEIGHT, MAX_BLADE_HEIGHT);
+            // A new lever setting starts a new ramp. Arrows do not tilt the moldboard.
+            gradePassCommand = bladeHeight;
+            gradePassTraveled = 0.0D;
+            gradePassActive = Math.abs(bladeHeight) > 0.02F;
+            gradePassLatchOrigin = true;
+            bladeAngle = 0.0F;
         }
-        // Blade angle naturally pitches forward slightly as it penetrates into the ground
-        bladeAngle = bladeHeight * 12.0F + (inputBladeTilt * 8.0F);
+
+        // Ripper claw controls (Arrow Left = Raise/Transport, Arrow Right = Lower/Penetrate)
+        if (inputBladeTilt > 0.01F) {
+            ripperLift = Mth.clamp(ripperLift + 0.035F, 0.0F, 1.0F);
+        } else if (inputBladeTilt < -0.01F) {
+            ripperLift = Mth.clamp(ripperLift - 0.035F, 0.0F, 1.0F);
+        }
 
         // 3. Track kinematics and differential steering
-        boolean heavyLoad = carriedUnits > (BulldozerBladeController.MAX_BLADE_CAPACITY / 2);
+        boolean heavyLoad = carriedUnits > (getMaxBladeCapacity() / 2);
         BulldozerTrackController.TrackState trackState = trackController.tick(
                 serverLevel,
                 this.position(),
@@ -215,21 +401,33 @@ public class GroundworksBulldozerEntity extends Entity {
         this.entityData.set(VEHICLE_PITCH, trackState.pitch());
         this.entityData.set(VEHICLE_ROLL, trackState.roll());
 
-        // Apply forward translation and gravity
+        // Apply forward translation and realistic ground conforming / gravity
         Vec3 motion = trackState.forwardDelta();
-        if (!this.onGround()) {
-            motion = motion.add(0.0D, -0.08D, 0.0D);
+        applyGradePass(trackState, adjustingBlade);
+        double targetGroundY = gradeChassisY;
+        double currentY = this.getY();
+
+        if (currentY > targetGroundY + 0.08D) {
+            // Suspended in air: fall down towards actual track support
+            double drop = Math.min(0.50D, (currentY - targetGroundY) * 0.50D + 0.08D);
+            motion = motion.add(0.0D, -drop, 0.0D);
+        } else if (currentY < targetGroundY - 0.04D) {
+            // Tracks penetrating ground support: conform upward smoothly without launching into the air
+            double rise = Math.min(0.08D, (targetGroundY - currentY) * 0.25D);
+            motion = motion.add(0.0D, rise, 0.0D);
         } else {
             motion = motion.add(0.0D, -0.02D, 0.0D); // Keep tracks firmly grounded
         }
 
-        // 4. Update Blade Transforms and Execute Terrain Grading BEFORE Vehicle Motion
-        BladeTransform currentTransform = BladeTransform.compute(
-                this.position(),
+        // 4. Update Blade Transforms and Execute Terrain Grading BEFORE Vehicle Motion.
+        // Grade position, not the pitched nose: pitch must not deepen the cut.
+        Vec3 gradePos = new Vec3(this.getX(), gradeCutY, this.getZ());
+        BladeTransform currentTransform = computeBladeTransform(
+                gradePos,
                 this.getYRot(),
-                trackState.pitch(),
+                0.0F,
                 trackState.roll(),
-                bladeHeight,
+                0.0F,
                 bladeAngle
         );
 
@@ -238,12 +436,13 @@ public class GroundworksBulldozerEntity extends Entity {
         }
 
         Vec3 targetPos = this.position().add(motion);
-        BladeTransform nextTransform = BladeTransform.compute(
-                targetPos,
+        Vec3 gradeTarget = new Vec3(targetPos.x, gradeCutY, targetPos.z);
+        BladeTransform nextTransform = computeBladeTransform(
+                gradeTarget,
                 this.getYRot(),
-                trackState.pitch(),
+                0.0F,
                 trackState.roll(),
-                bladeHeight,
+                0.0F,
                 bladeAngle
         );
 
@@ -254,7 +453,8 @@ public class GroundworksBulldozerEntity extends Entity {
                 previousBladeTransform,
                 nextTransform,
                 carriedUnits,
-                carriedMaterial
+                carriedMaterial,
+                getMaxBladeCapacity()
         );
 
         this.carriedUnits = bladeResult.carriedUnitsAfter();
@@ -266,22 +466,25 @@ public class GroundworksBulldozerEntity extends Entity {
         this.setDeltaMovement(motion);
         this.move(MoverType.SELF, motion);
 
-        previousBladeTransform = BladeTransform.compute(
-                this.position(),
+        // Compact and level terrain under the heavy steel crawler tracks while driving
+        if (Math.abs(trackState.leftSpeed()) > 0.005F || Math.abs(trackState.rightSpeed()) > 0.005F) {
+            levelTerrainUnderTracks(serverLevel, adapter, trackState);
+        }
+
+        previousBladeTransform = computeBladeTransform(
+                new Vec3(this.getX(), gradeCutY, this.getZ()),
                 this.getYRot(),
-                trackState.pitch(),
+                0.0F,
                 trackState.roll(),
-                bladeHeight,
+                0.0F,
                 bladeAngle
         );
         currentBladeTransform = previousBladeTransform;
 
         // Force position synchronization to passengers and tracking clients while driving
         if (hasDriver || Math.abs(trackState.leftSpeed()) > 0.001F || Math.abs(trackState.rightSpeed()) > 0.001F || Math.abs(trackState.yawDeltaDegrees()) > 0.01F) {
-            this.syncPosition = true;
             this.needsSync = true;
-            this.syncVelocity = true;
-        }
+            }
 
         // Spawn visual dust/shaving particles & scraping audio when actively pushing terrain
         if (bladeResult.isPushing() || bladeResult.unitsExcavated() > 0) {
@@ -311,6 +514,9 @@ public class GroundworksBulldozerEntity extends Entity {
         this.entityData.set(VEHICLE_PITCH, trackState.pitch());
         this.entityData.set(VEHICLE_ROLL, trackState.roll());
         this.entityData.set(IS_PUSHING, bladeResult.isPushing());
+        this.entityData.set(RIPPER_LIFT, ripperLift);
+
+        tickRipper(serverLevel, hasDriver, trackState);
     }
 
     private void spawnWorkingParticles(ServerLevel level, BladeTransform transform, GranularMaterial mat) {
@@ -336,6 +542,76 @@ public class GroundworksBulldozerEntity extends Entity {
                 0.06D
         );
     }
+
+    public float getRipperLift() {
+        return this.entityData.get(RIPPER_LIFT);
+    }
+
+    public void setRipperLift(float lift) {
+        this.ripperLift = Mth.clamp(lift, 0.0F, 1.0F);
+        this.entityData.set(RIPPER_LIFT, this.ripperLift);
+    }
+
+    protected void levelTerrainUnderTracks(
+            ServerLevel level,
+            GroundworksBulldozerAdapter adapter,
+            BulldozerTrackController.TrackState trackState
+    ) {
+        double yawRad = Math.toRadians(this.getYRot());
+        Vec3 forward = new Vec3(-Math.sin(yawRad), 0.0D, Math.cos(yawRad));
+        Vec3 right = new Vec3(Math.cos(yawRad), 0.0D, Math.sin(yawRad));
+
+        double trackGauge = getBladeWidth() * 0.65D;
+        double trackLength = getArmLength() * 1.35D;
+        double halfGauge = trackGauge * 0.5D;
+        double halfLength = trackLength * 0.5D;
+
+        double[] zFractions = {-1.0D, -0.5D, 0.0D, 0.5D, 1.0D};
+        double[] xOffsets = {-halfGauge, halfGauge};
+
+        double pitchRad = Math.toRadians(trackState.pitch());
+        double rollRad = Math.toRadians(trackState.roll());
+
+        Set<net.minecraft.core.BlockPos> leveledPositions = new HashSet<>();
+
+        for (double xOff : xOffsets) {
+            for (double zFrac : zFractions) {
+                double zDist = zFrac * halfLength;
+                // Positive pitch is nose down (front shoe lower). Positive roll is left side high,
+                // so the right shoe (positive xOff) must sit lower, not higher.
+                double trackShoeY = this.getY() - (Math.sin(pitchRad) * zDist) - (Math.sin(rollRad) * xOff);
+                // Tracks compact bumps. They do not carve a second trench under a pitched nose.
+                trackShoeY = Math.max(trackShoeY, this.getY() - 0.20D);
+
+                Vec3 trackPt = this.position()
+                        .add(forward.scale(zDist))
+                        .add(right.scale(xOff));
+
+                net.minecraft.core.BlockPos trackBlockPos = net.minecraft.core.BlockPos.containing(trackPt.x, trackShoeY + 0.1D, trackPt.z);
+
+                for (net.minecraft.core.BlockPos pos : List.of(trackBlockPos, trackBlockPos.below())) {
+                    if (leveledPositions.add(pos) && adapter.isDiggable(pos)) {
+                        GranularMaterial mat = adapter.getMaterial(pos);
+                        if (mat == GranularMaterial.EMPTY) {
+                            continue;
+                        }
+
+                        // Compact/shave protruding loose microvoxels above track shoe grade:
+                        ExcavationResult cut = adapter.excavateMicrovoxelsAbove(pos, trackShoeY, 128, mat);
+                        if (cut.success() && cut.unitsRemoved() > 0) {
+                            net.minecraft.core.BlockPos underPos = pos.below();
+                            if (adapter.isDiggable(underPos)) {
+                                adapter.fillDepressionBelow(underPos, trackShoeY, mat, cut.unitsRemoved());
+                            }
+                            adapter.markSimulate(pos);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    protected void tickRipper(ServerLevel serverLevel, boolean hasDriver, BulldozerTrackController.TrackState trackState) {}
 
     // ── Passenger Interaction & Seating ──────────────────────────────
 
@@ -388,12 +664,12 @@ public class GroundworksBulldozerEntity extends Entity {
     }
 
     @Override
-    public InteractionResult interact(Player player, InteractionHand hand, Vec3 location) {
+    public InteractionResult interact(Player player, InteractionHand hand) {
         // Shift + Right-Click with empty hand: retrieve / dismantle bulldozer into inventory
         if (player.isSecondaryUseActive() && player.getItemInHand(hand).isEmpty()) {
             if (!this.level().isClientSide() && this.getPassengers().isEmpty()) {
                 if (!player.getAbilities().instabuild) {
-                    player.getInventory().add(new ItemStack(GroundworksBulldozerMod.BULLDOZER_ITEM));
+                    player.getInventory().add(new ItemStack(getDropItem()));
                 }
                 this.level().playSound(
                         null, this.getX(), this.getY(), this.getZ(),
@@ -469,7 +745,7 @@ public class GroundworksBulldozerEntity extends Entity {
 
         if (source.getEntity() instanceof Player player) {
             if (!player.getAbilities().instabuild) {
-                this.spawnAtLocation(level, GroundworksBulldozerMod.BULLDOZER_ITEM);
+                this.spawnAtLocation(level, getDropItem());
             }
             this.ejectPassengers();
             this.discard();
@@ -532,7 +808,7 @@ public class GroundworksBulldozerEntity extends Entity {
     }
 
     public void setCarriedUnits(int units) {
-        this.carriedUnits = Math.max(0, Math.min(units, BulldozerBladeController.MAX_BLADE_CAPACITY));
+        this.carriedUnits = Math.max(0, Math.min(units, getMaxBladeCapacity()));
         this.entityData.set(CARRIED_UNITS, this.carriedUnits);
     }
 
@@ -563,6 +839,113 @@ public class GroundworksBulldozerEntity extends Entity {
 
     public float getVehicleRoll() {
         return this.entityData.get(VEHICLE_ROLL);
+    }
+
+    public double getGradeDatumY() {
+        return this.entityData.get(GRADE_DATUM);
+    }
+
+    /**
+     * Blade height the model and HUD should show. Once the tracks have settled
+     * onto the slot floor, this returns 0 instead of the lever setting, so the
+     * blade is not drawn another 60 cm under the floor.
+     */
+    public float getVisualBladeHeight() {
+        double edge = GradeDatum.edgeY(
+                getGradeDatumY(),
+                this.getY(),
+                bladeHeight
+        );
+        return (float) Mth.clamp(edge - this.getY(), MIN_BLADE_HEIGHT, MAX_BLADE_HEIGHT);
+    }
+
+    /**
+     * A lever command becomes a ramp over {@link #getVehicleLength()}.
+     * Arrows only set the depth. The bite angle appears while driving and returns to zero with the lever.
+     */
+    private void applyGradePass(BulldozerTrackController.TrackState trackState, boolean adjustingBlade) {
+        double support = trackState.groundSupportY();
+        double saneSupport = support;
+        if (!Double.isFinite(saneSupport)) {
+            saneSupport = this.getY();
+        } else if (saneSupport > this.getY() + 2.5D) {
+            // Limit upward support snapping (cannot climb ledges higher than max step)
+            saneSupport = this.getY() + 2.5D;
+        } else if (saneSupport < this.getY() - 16.0D) {
+            // Bound extreme bottom fall to search window
+            saneSupport = this.getY() - 16.0D;
+        }
+
+        // Reversing or backing away: cancel any active forward grade cut pass so the machine
+        // does not lock itself to a forward ramp elevation and levitate above slopes.
+        boolean isReversing = inputThrottle < -0.01F
+                || trackState.leftSpeed() < -0.01F
+                || trackState.rightSpeed() < -0.01F;
+        if (isReversing) {
+            gradePassActive = false;
+            gradePassOriginY = Double.NaN;
+            gradePassTraveled = 0.0D;
+            gradeDatumY = Double.NaN;
+            bladeAngle = 0.0F;
+        }
+
+        // If the machine drives off the grade (drops significantly below the cut floor),
+        // end the pass so it follows the actual slope down rather than planing the sky.
+        if (gradePassActive && support < gradePassOriginY + gradePassCommand - 1.0D) {
+            gradePassActive = false;
+            gradePassOriginY = Double.NaN;
+        }
+
+        if (gradePassLatchOrigin) {
+            gradePassOriginY = saneSupport;
+            gradePassLatchOrigin = false;
+        }
+        if (adjustingBlade || !gradePassActive || Double.isNaN(gradePassOriginY)) {
+            if (!adjustingBlade) {
+                bladeAngle = 0.0F;
+            }
+            double gradeY = holdGradeDatum(saneSupport);
+            gradeChassisY = saneSupport;
+            gradeCutY = gradeY + bladeHeight;
+            return;
+        }
+        if (inputThrottle > 0.05F) {
+            Vec3 step = trackState.forwardDelta();
+            gradePassTraveled += Math.sqrt(step.x * step.x + step.z * step.z);
+        }
+        double length = Math.max(1.0D, getVehicleLength());
+        double tChassis = GradePass.chassisProgress(gradePassTraveled, length);
+        double tBlade = GradePass.bladeProgress(gradePassTraveled, getArmLength(), length);
+        if (tChassis >= 1.0D - 1.0E-6D) {
+            gradePassActive = false;
+            bladeHeight = 0.0F;
+            bladeAngle = 0.0F;
+            gradeDatumY = gradePassOriginY + gradePassCommand;
+            this.entityData.set(GRADE_DATUM, (float) gradeDatumY);
+            gradeChassisY = gradeDatumY;
+            gradeCutY = gradeDatumY;
+            return;
+        }
+        bladeHeight = GradePass.remainingHeight(gradePassCommand, tChassis);
+        bladeAngle = GradePass.biteDegrees(gradePassCommand, length, tChassis);
+        gradeChassisY = GradePass.elevation(gradePassOriginY, gradePassCommand, tChassis);
+        gradeCutY = GradePass.elevation(gradePassOriginY, gradePassCommand, tBlade);
+        this.entityData.set(GRADE_DATUM, (float) gradeChassisY);
+    }
+
+    /**
+     * Latch the grade when the blade is raised or the machine climbs.
+     * A lowered blade does not follow the chassis down into the slot it just cut.
+     */
+    private double holdGradeDatum(double groundSupportY) {
+        gradeDatumY = GradeDatum.hold(
+                gradeDatumY,
+                this.getY(),
+                groundSupportY,
+                bladeHeight
+        );
+        this.entityData.set(GRADE_DATUM, (float) gradeDatumY);
+        return gradeDatumY;
     }
 
     public boolean isPushing() {
@@ -602,6 +985,10 @@ public class GroundworksBulldozerEntity extends Entity {
         this.entityData.set(TRACK_RIGHT_SPEED, state.rightTrackSpeed());
         this.entityData.set(VEHICLE_PITCH, state.vehiclePitch());
         this.entityData.set(VEHICLE_ROLL, state.vehicleRoll());
+        this.gradePassActive = input.getBooleanOr("GradePassActive", false);
+        this.gradePassCommand = input.getFloatOr("GradePassCommand", 0.0F);
+        this.gradePassTraveled = input.getDoubleOr("GradePassTraveled", 0.0D);
+        this.gradePassOriginY = input.getDoubleOr("GradePassOriginY", Double.NaN);
     }
 
     @Override
@@ -617,5 +1004,11 @@ public class GroundworksBulldozerEntity extends Entity {
                 this.trackController.vehicleRoll()
         );
         state.save(output);
+        output.putBoolean("GradePassActive", this.gradePassActive);
+        output.putFloat("GradePassCommand", this.gradePassCommand);
+        output.putDouble("GradePassTraveled", this.gradePassTraveled);
+        if (!Double.isNaN(this.gradePassOriginY)) {
+            output.putDouble("GradePassOriginY", this.gradePassOriginY);
+        }
     }
 }
