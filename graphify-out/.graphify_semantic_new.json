@@ -1,0 +1,1229 @@
+{
+  "nodes": [
+    {
+      "id": "readme_peterwolfs_groundworks_bulldozer",
+      "label": "Peterwolf's Groundworks Bulldozer",
+      "file_type": "document",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "readme_medium_tracked_bulldozer",
+      "label": "Medium Tracked Bulldozer",
+      "file_type": "concept",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "readme_heavy_mining_crawler",
+      "label": "Heavy Mining Crawler Bulldozer",
+      "file_type": "concept",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Twice as large as the medium crawler, Cat D10T/D8T class, so it can push 16+ blocks."
+    },
+    {
+      "id": "readme_volume_conservation",
+      "label": "Strict Volume Conservation",
+      "file_type": "rationale",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Pushed volume must equal removed volume. Zero duplication, zero loss."
+    },
+    {
+      "id": "readme_server_authority",
+      "label": "Server Authority",
+      "file_type": "rationale",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "The server owns position, tracks, blade elevation, terrain edits, and material conservation. The client only animates and shows the HUD."
+    },
+    {
+      "id": "changelog_heavy_bulldozer_020",
+      "label": "Heavy Bulldozer 0.2.0",
+      "file_type": "document",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/CHANGELOG.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "changelog_high_drive",
+      "label": "Triangular High-Drive Tracks",
+      "file_type": "concept",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/CHANGELOG.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Elevated sprocket keeps the final drive out of shock loads and mud."
+    },
+    {
+      "id": "changelog_semi_u_blade",
+      "label": "6.0m Semi-U Blade",
+      "file_type": "concept",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/CHANGELOG.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "changelog_no_pillars",
+      "label": "No Pyramid Columns",
+      "file_type": "rationale",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/CHANGELOG.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Forward berm height is capped at the moldboard top so lifted spoil spreads as an even layer instead of 1x1 spires."
+    },
+    {
+      "id": "changelog_ripper",
+      "label": "Rear Ripper",
+      "file_type": "concept",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/CHANGELOG.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "graphify_out_memory_query_20261008_024545_e29f1dfc_why_does_bladetransform_connect_blade_kinematics_t_bladetransform",
+      "label": "BladeTransform",
+      "file_type": "concept",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/graphify-out/memory/query_20261008_024545_e29f1dfc_why_does_bladetransform_connect_blade_kinematics_t.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-10-08T02:45:45.484677+00:00",
+      "author": null,
+      "contributor": "graphify"
+    },
+    {
+      "id": "graphify_out_memory_query_20261008_024545_e29f1dfc_why_does_bladetransform_connect_blade_kinematics_t_kinematic_contract",
+      "label": "Blade Kinematic Contract",
+      "file_type": "rationale",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/graphify-out/memory/query_20261008_024545_e29f1dfc_why_does_bladetransform_connect_blade_kinematics_t.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-10-08T02:45:45.484677+00:00",
+      "author": null,
+      "contributor": "graphify",
+      "rationale": "BladeTransform is the shared 3D pose that entity state, HUD, terrain cutting, and volume tests all read."
+    },
+    {
+      "id": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer",
+      "label": "Heavy Bulldozer Entity Texture Atlas",
+      "file_type": "image",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_safety_yellow_panels",
+      "label": "Safety-Yellow Body Panels",
+      "file_type": "image",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_louver_vents",
+      "label": "Yellow-Framed Horizontal Louver Vents",
+      "file_type": "image",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_ribbed_charcoal_panel",
+      "label": "Charcoal Vertically Ribbed Panel",
+      "file_type": "image",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_mesh_band",
+      "label": "Dark Grid Mesh Band",
+      "file_type": "image",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_blue_glass_panel",
+      "label": "Light-Blue Glass Panel with White Diagonal Highlight",
+      "file_type": "image",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_yellow_ring",
+      "label": "Yellow Ring on Black Ribbed Field",
+      "file_type": "image",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_orange_marker_square",
+      "label": "Orange Square with Yellow Border",
+      "file_type": "image",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_cream_square",
+      "label": "Tiny Cream Square",
+      "file_type": "image",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_yellow_white_stripe",
+      "label": "Yellow-White-Yellow Vertical Stripe",
+      "file_type": "image",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_black_disc",
+      "label": "Black Disc on Yellow Panel",
+      "file_type": "image",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_small_lined_gray_square",
+      "label": "Small Horizontally Lined Gray Square",
+      "file_type": "image",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_riveted_silver_band",
+      "label": "Silver Band with Even Black Rivet Dots",
+      "file_type": "image",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_hatched_gray_plate",
+      "label": "Diagonally Split Gray Plate with Black Hatch",
+      "file_type": "image",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_hazard_chevrons",
+      "label": "Yellow and Black Diagonal Hazard Stripes",
+      "file_type": "image",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_brown_hatched_panel",
+      "label": "Brown Diagonally Hatched Rectangle",
+      "file_type": "image",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_lower_dark_blocks",
+      "label": "Lower Dark Gray Blocks",
+      "file_type": "image",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_unused_black_region",
+      "label": "Unused Black Lower Atlas",
+      "file_type": "image",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_cab_glazing",
+      "label": "Cab Glazing",
+      "file_type": "concept",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_high_visibility_livery",
+      "label": "High-Visibility Construction Livery",
+      "file_type": "concept",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_cooling_intake",
+      "label": "Cooling Intake",
+      "file_type": "concept",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_track_running_gear",
+      "label": "Track Running Gear",
+      "file_type": "concept",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_moldboard",
+      "label": "Moldboard",
+      "file_type": "concept",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_lamp_or_gauge",
+      "label": "Lamp or Gauge",
+      "file_type": "concept",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_weathered_surface",
+      "label": "Weathered or Soiled Surface",
+      "file_type": "concept",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_main_resources_assets_pw_groundworks_bulldozer_textures_item_heavy_bulldozer",
+      "label": "Heavy Bulldozer Item Texture",
+      "file_type": "image",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/item/heavy_bulldozer.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "heavy_bulldozer",
+      "label": "Heavy Bulldozer",
+      "file_type": "concept",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/item/heavy_bulldozer.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "bulldozer_blade",
+      "label": "Front Blade",
+      "file_type": "concept",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/item/heavy_bulldozer.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "operator_cab",
+      "label": "Operator Cab",
+      "file_type": "concept",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/item/heavy_bulldozer.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "cab_side_windows",
+      "label": "Two Dark Cab Side Windows",
+      "file_type": "concept",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/item/heavy_bulldozer.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "cab_roof_pipe",
+      "label": "Short Yellow Cab-Roof Pipe",
+      "file_type": "concept",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/item/heavy_bulldozer.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "exhaust_stack",
+      "label": "Exhaust Stack",
+      "file_type": "concept",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/item/heavy_bulldozer.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "continuous_tracks",
+      "label": "Dark Continuous Tracks",
+      "file_type": "concept",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/item/heavy_bulldozer.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "track_wheels",
+      "label": "Two Visible Track Wheels",
+      "file_type": "concept",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/item/heavy_bulldozer.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "yellow_bodywork",
+      "label": "Yellow Bodywork",
+      "file_type": "concept",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/item/heavy_bulldozer.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "left_facing_three_quarter_view",
+      "label": "Left-Facing Three-Quarter View",
+      "file_type": "concept",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/item/heavy_bulldozer.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "pixel_art_item_icon",
+      "label": "Pixel-Art Item Icon",
+      "file_type": "concept",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/item/heavy_bulldozer.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "texture_32x32_rgba",
+      "label": "32x32 RGBA PNG",
+      "file_type": "concept",
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/item/heavy_bulldozer.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "readme_peterwolfs_groundworks_bulldozer",
+      "target": "readme_medium_tracked_bulldozer",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/README.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "readme_peterwolfs_groundworks_bulldozer",
+      "target": "readme_heavy_mining_crawler",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/README.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "readme_heavy_mining_crawler",
+      "target": "changelog_heavy_bulldozer_020",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/README.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "changelog_heavy_bulldozer_020",
+      "target": "changelog_high_drive",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/CHANGELOG.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "changelog_heavy_bulldozer_020",
+      "target": "changelog_semi_u_blade",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/CHANGELOG.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "changelog_heavy_bulldozer_020",
+      "target": "changelog_ripper",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/CHANGELOG.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "changelog_no_pillars",
+      "target": "changelog_semi_u_blade",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/CHANGELOG.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "readme_volume_conservation",
+      "target": "readme_peterwolfs_groundworks_bulldozer",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/README.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "readme_server_authority",
+      "target": "readme_peterwolfs_groundworks_bulldozer",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/README.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "graphify_out_memory_query_20261008_024545_e29f1dfc_why_does_bladetransform_connect_blade_kinematics_t_kinematic_contract",
+      "target": "graphify_out_memory_query_20261008_024545_e29f1dfc_why_does_bladetransform_connect_blade_kinematics_t_bladetransform",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/graphify-out/memory/query_20261008_024545_e29f1dfc_why_does_bladetransform_connect_blade_kinematics_t.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-10-08T02:45:45.484677+00:00",
+      "author": null,
+      "contributor": "graphify",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer",
+      "target": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_safety_yellow_panels",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer",
+      "target": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_louver_vents",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer",
+      "target": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_ribbed_charcoal_panel",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer",
+      "target": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_mesh_band",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer",
+      "target": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_blue_glass_panel",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer",
+      "target": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_yellow_ring",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer",
+      "target": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_orange_marker_square",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer",
+      "target": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_cream_square",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer",
+      "target": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_yellow_white_stripe",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer",
+      "target": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_black_disc",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer",
+      "target": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_small_lined_gray_square",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer",
+      "target": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_riveted_silver_band",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer",
+      "target": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_hatched_gray_plate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer",
+      "target": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_hazard_chevrons",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer",
+      "target": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_brown_hatched_panel",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer",
+      "target": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_lower_dark_blocks",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer",
+      "target": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_unused_black_region",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_blue_glass_panel",
+      "target": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_cab_glazing",
+      "relation": "depicts",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_safety_yellow_panels",
+      "target": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_high_visibility_livery",
+      "relation": "part_of",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_hazard_chevrons",
+      "target": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_high_visibility_livery",
+      "relation": "part_of",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_orange_marker_square",
+      "target": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_high_visibility_livery",
+      "relation": "part_of",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_yellow_white_stripe",
+      "target": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_high_visibility_livery",
+      "relation": "part_of",
+      "confidence": "INFERRED",
+      "confidence_score": 0.65,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_louver_vents",
+      "target": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_cooling_intake",
+      "relation": "depicts",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_mesh_band",
+      "target": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_cooling_intake",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.65,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_ribbed_charcoal_panel",
+      "target": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_cooling_intake",
+      "relation": "may_depict",
+      "confidence": "AMBIGUOUS",
+      "confidence_score": 0.3,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_ribbed_charcoal_panel",
+      "target": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_track_running_gear",
+      "relation": "may_depict",
+      "confidence": "AMBIGUOUS",
+      "confidence_score": 0.25,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_riveted_silver_band",
+      "target": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_track_running_gear",
+      "relation": "may_depict",
+      "confidence": "AMBIGUOUS",
+      "confidence_score": 0.3,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_riveted_silver_band",
+      "target": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_moldboard",
+      "relation": "may_depict",
+      "confidence": "AMBIGUOUS",
+      "confidence_score": 0.2,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_hazard_chevrons",
+      "target": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_moldboard",
+      "relation": "may_depict",
+      "confidence": "AMBIGUOUS",
+      "confidence_score": 0.25,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_hatched_gray_plate",
+      "target": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_moldboard",
+      "relation": "may_depict",
+      "confidence": "AMBIGUOUS",
+      "confidence_score": 0.2,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_yellow_ring",
+      "target": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_lamp_or_gauge",
+      "relation": "may_depict",
+      "confidence": "AMBIGUOUS",
+      "confidence_score": 0.3,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_black_disc",
+      "target": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_lamp_or_gauge",
+      "relation": "may_depict",
+      "confidence": "AMBIGUOUS",
+      "confidence_score": 0.2,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_cream_square",
+      "target": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_lamp_or_gauge",
+      "relation": "may_depict",
+      "confidence": "AMBIGUOUS",
+      "confidence_score": 0.15,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_orange_marker_square",
+      "target": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_lamp_or_gauge",
+      "relation": "may_depict",
+      "confidence": "AMBIGUOUS",
+      "confidence_score": 0.3,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_brown_hatched_panel",
+      "target": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_weathered_surface",
+      "relation": "may_depict",
+      "confidence": "AMBIGUOUS",
+      "confidence_score": 0.25,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_lower_dark_blocks",
+      "target": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_track_running_gear",
+      "relation": "may_depict",
+      "confidence": "AMBIGUOUS",
+      "confidence_score": 0.15,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_small_lined_gray_square",
+      "target": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_cooling_intake",
+      "relation": "may_depict",
+      "confidence": "AMBIGUOUS",
+      "confidence_score": 0.2,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_resources_assets_pw_groundworks_bulldozer_textures_item_heavy_bulldozer",
+      "target": "heavy_bulldozer",
+      "relation": "depicts",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/item/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_resources_assets_pw_groundworks_bulldozer_textures_item_heavy_bulldozer",
+      "target": "texture_32x32_rgba",
+      "relation": "stored_as",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/item/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_resources_assets_pw_groundworks_bulldozer_textures_item_heavy_bulldozer",
+      "target": "pixel_art_item_icon",
+      "relation": "rendered_as",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/item/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_resources_assets_pw_groundworks_bulldozer_textures_item_heavy_bulldozer",
+      "target": "left_facing_three_quarter_view",
+      "relation": "shown_in",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/item/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "heavy_bulldozer",
+      "target": "yellow_bodywork",
+      "relation": "has_part",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/item/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "heavy_bulldozer",
+      "target": "bulldozer_blade",
+      "relation": "has_part",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/item/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "bulldozer_blade",
+      "target": "yellow_bodywork",
+      "relation": "shares_color_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/item/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "heavy_bulldozer",
+      "target": "operator_cab",
+      "relation": "has_part",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/item/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "operator_cab",
+      "target": "cab_side_windows",
+      "relation": "has_part",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/item/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "operator_cab",
+      "target": "cab_roof_pipe",
+      "relation": "has_part",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/item/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "cab_roof_pipe",
+      "target": "exhaust_stack",
+      "relation": "conceptually_related_to",
+      "confidence": "AMBIGUOUS",
+      "confidence_score": 0.25,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/item/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "heavy_bulldozer",
+      "target": "continuous_tracks",
+      "relation": "has_part",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/item/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "continuous_tracks",
+      "target": "track_wheels",
+      "relation": "has_part",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/item/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "heavy_dozer_release",
+      "label": "Heavy Dozer 0.2.0 Release",
+      "nodes": [
+        "changelog_heavy_bulldozer_020",
+        "changelog_high_drive",
+        "changelog_semi_u_blade",
+        "changelog_ripper"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/CHANGELOG.md"
+    },
+    {
+      "id": "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_livery_cluster",
+      "label": "Yellow panels, hazard stripes, and orange marker share one high-visibility paint scheme",
+      "nodes": [
+        "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_safety_yellow_panels",
+        "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_hazard_chevrons",
+        "src_main_resources_assets_pw_groundworks_bulldozer_textures_entity_heavy_bulldozer_orange_marker_square"
+      ],
+      "relation": "shares_construction_livery",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "id": "he_heavy_bulldozer_visible_masses",
+      "label": "Blade, cab, and tracks co-depicted on the icon",
+      "nodes": [
+        "bulldozer_blade",
+        "operator_cab",
+        "continuous_tracks"
+      ],
+      "relation": "co_depicted",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/item/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "id": "he_operator_cab_details",
+      "label": "Cab with two side windows and a roof pipe",
+      "nodes": [
+        "operator_cab",
+        "cab_side_windows",
+        "cab_roof_pipe"
+      ],
+      "relation": "visually_composed_of",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/item/heavy_bulldozer.png",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

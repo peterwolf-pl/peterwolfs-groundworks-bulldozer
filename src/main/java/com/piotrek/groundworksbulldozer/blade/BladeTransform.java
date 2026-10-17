@@ -24,6 +24,7 @@ public record BladeTransform(
         double height,
         double bladeHeight,
         double bladeAngle,
+        double cuttingEdgeDepth,
         List<Vec3> cuttingEdgePoints,
         AABB boundingBox
 ) {
@@ -43,9 +44,9 @@ public record BladeTransform(
      *
      * @param vehiclePos   World position of vehicle (ground level under center)
      * @param vehicleYaw   Vehicle yaw in degrees
-     * @param vehiclePitch Vehicle pitch in degrees
-     * @param vehicleRoll  Vehicle roll in degrees
-     * @param bladeHeight  Continuous vertical offset of cutting edge relative to ground (-0.60 .. +0.80)
+     * @param vehiclePitch Vehicle pitch in degrees. Positive is nose down, matching the track controller.
+     * @param vehicleRoll  Vehicle roll in degrees. Positive means the left side is higher.
+     * @param bladeHeight  Signed depth of the cutting edge relative to the track plane (-0.60 .. +0.80)
      * @param bladeAngle   Blade tilt / angle in degrees (-15 .. +25)
      * @return World-space BladeTransform
      */
@@ -56,6 +57,35 @@ public record BladeTransform(
             float vehicleRoll,
             float bladeHeight,
             float bladeAngle
+    ) {
+        return compute(
+                vehiclePos,
+                vehicleYaw,
+                vehiclePitch,
+                vehicleRoll,
+                bladeHeight,
+                bladeAngle,
+                DEFAULT_BLADE_WIDTH,
+                DEFAULT_BLADE_HEIGHT,
+                MOUNT_FORWARD_OFFSET,
+                NUM_EDGE_SAMPLES
+        );
+    }
+
+    /**
+     * Computes the blade's world-space transform with customizable blade geometry.
+     */
+    public static BladeTransform compute(
+            Vec3 vehiclePos,
+            float vehicleYaw,
+            float vehiclePitch,
+            float vehicleRoll,
+            float bladeHeight,
+            float bladeAngle,
+            double bladeWidth,
+            double bladeHeightDim,
+            double armLength,
+            int numSamples
     ) {
         double yawRad = Math.toRadians(vehicleYaw);
         double pitchRad = Math.toRadians(vehiclePitch);
@@ -68,42 +98,53 @@ public record BladeTransform(
         Vec3 baseRight = new Vec3(Math.cos(yawRad), 0.0D, Math.sin(yawRad));
         Vec3 baseUp = new Vec3(0.0D, 1.0D, 0.0D);
 
-        // Apply vehicle pitch & roll to orientation vectors
-        Vec3 forward = rotateVector(baseForward, baseRight, -pitchRad);
-        forward = rotateVector(forward, baseForward, rollRad).normalize();
+        // Pitch rotation conforming to terrain slope (positive pitch = nose down, negative pitch = nose up)
+        // Along the track pitch, the forward vector angles into the ramp:
+        Vec3 pitchedForward = new Vec3(
+                baseForward.x * Math.cos(pitchRad),
+                -Math.sin(pitchRad),
+                baseForward.z * Math.cos(pitchRad)
+        ).normalize();
 
-        Vec3 right = rotateVector(baseRight, baseForward, rollRad);
-        right = rotateVector(right, baseRight, -pitchRad).normalize();
+        // Normal vector perpendicular to the track plane:
+        Vec3 pitchedUp = new Vec3(
+                baseForward.x * Math.sin(pitchRad),
+                Math.cos(pitchRad),
+                baseForward.z * Math.sin(pitchRad)
+        ).normalize();
 
-        Vec3 up = forward.cross(right).normalize();
+        // Roll still tips the wings, but a hard cap stops one side opening a trench.
+        double cappedRoll = Mth.clamp(rollRad, Math.toRadians(-15.0D), Math.toRadians(15.0D));
+        Vec3 right = rotateVector(baseRight, pitchedForward, -cappedRoll).normalize();
 
-        // Push arm kinematics: blade center is located forward from vehicle trunnion mount
-        // As blade raises, push arms swing in an arc
-        double armLength = MOUNT_FORWARD_OFFSET;
-        double effectiveElevation = bladeHeight;
-
-        // Cutting edge center in world space
+        // The cutting edge is located at the forward push arm offset along the pitched track plane,
+        // offset by bladeHeight perpendicular to the track plane.
+        // On slopes, this ensures the cutting edge follows the ramp slope faithfully and can plunge deep into it.
         Vec3 cuttingEdgeCenter = vehiclePos
-                .add(forward.scale(armLength))
-                .add(up.scale(effectiveElevation));
+                .add(pitchedForward.scale(armLength))
+                .add(pitchedUp.scale(bladeHeight));
 
-        // Blade pitch rotation (tilted around blade right axis)
-        double totalBladePitch = Math.toRadians(vehiclePitch + bladeAngle);
-        Vec3 bladeUp = rotateVector(up, right, totalBladePitch).normalize();
+        // Moldboard faces along the machine. Operator blade angle tips it.
+        double bladePitch = Math.toRadians(bladeAngle);
+        Vec3 bladeUp = rotateVector(pitchedUp, right, bladePitch).normalize();
         Vec3 bladeForward = right.cross(bladeUp).normalize();
 
         // Moldboard geometric center is half height above cutting edge
-        Vec3 bladeCenter = cuttingEdgeCenter.add(bladeUp.scale(DEFAULT_BLADE_HEIGHT * 0.5D));
+        Vec3 bladeCenter = cuttingEdgeCenter.add(bladeUp.scale(bladeHeightDim * 0.5D));
 
         // Sample points along the cutting edge from left wing (-W/2) to right wing (+W/2)
-        List<Vec3> edgePoints = new ArrayList<>(NUM_EDGE_SAMPLES);
-        double halfWidth = DEFAULT_BLADE_WIDTH * 0.5D;
-        for (int i = 0; i < NUM_EDGE_SAMPLES; i++) {
-            double fraction = (double) i / (NUM_EDGE_SAMPLES - 1); // 0.0 .. 1.0
-            double lateral = -halfWidth + (fraction * DEFAULT_BLADE_WIDTH); // -halfWidth .. +halfWidth
+        int samples = Math.max(2, numSamples);
+        List<Vec3> edgePoints = new ArrayList<>(samples);
+        double halfWidth = bladeWidth * 0.5D;
+        for (int i = 0; i < samples; i++) {
+            double fraction = (double) i / (samples - 1); // 0.0 .. 1.0
+            double lateral = -halfWidth + (fraction * bladeWidth); // -halfWidth .. +halfWidth
             Vec3 pt = cuttingEdgeCenter.add(right.scale(lateral));
             edgePoints.add(pt);
         }
+
+        // Depth relative to the track plane. Negative values cut into the ramp/ground.
+        double cuttingEdgeDepth = bladeHeight;
 
         // Compute world-space AABB enclosing the entire blade moldboard and cutting edge
         double minX = Double.POSITIVE_INFINITY, minY = Double.POSITIVE_INFINITY, minZ = Double.POSITIVE_INFINITY;
@@ -111,7 +152,7 @@ public record BladeTransform(
 
         // Include bottom cutting edge points and top moldboard edge points
         for (Vec3 pt : edgePoints) {
-            Vec3 topPt = pt.add(bladeUp.scale(DEFAULT_BLADE_HEIGHT));
+            Vec3 topPt = pt.add(bladeUp.scale(bladeHeightDim));
             Vec3 frontPt = pt.add(bladeForward.scale(0.35D));
             Vec3 rearPt = pt.subtract(bladeForward.scale(0.35D));
 
@@ -133,10 +174,11 @@ public record BladeTransform(
                 bladeForward,
                 right,
                 bladeUp,
-                DEFAULT_BLADE_WIDTH,
-                DEFAULT_BLADE_HEIGHT,
+                bladeWidth,
+                bladeHeightDim,
                 bladeHeight,
                 bladeAngle,
+                cuttingEdgeDepth,
                 edgePoints,
                 box
         );
@@ -168,6 +210,13 @@ public record BladeTransform(
      */
     public boolean isRaised() {
         return bladeHeight > 0.05D;
+    }
+
+    /**
+     * Returns true if the blade is in full transport position (raised high for road travel without grading).
+     */
+    public boolean isTransport() {
+        return bladeHeight > 0.65D;
     }
 
     /**

@@ -5,6 +5,7 @@ import com.mojang.math.Axis;
 import com.piotrek.groundworksbulldozer.GroundworksBulldozerMod;
 import com.piotrek.groundworksbulldozer.client.GroundworksBulldozerClient;
 import com.piotrek.groundworksbulldozer.client.model.BulldozerModel;
+import com.piotrek.groundworksbulldozer.client.model.SpoilHeapModel;
 import com.piotrek.groundworksbulldozer.entity.GroundworksBulldozerEntity;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRenderer;
@@ -25,6 +26,7 @@ public class BulldozerRenderer extends EntityRenderer<GroundworksBulldozerEntity
     public static final Identifier TEXTURE = GroundworksBulldozerMod.id("textures/entity/bulldozer.png");
 
     private final BulldozerModel model;
+    private final SpoilHeapModel spoil;
     private final Map<GroundworksBulldozerEntity, TrackAnimationState> trackAnimations = new WeakHashMap<>();
 
     private static final class TrackAnimationState {
@@ -36,6 +38,7 @@ public class BulldozerRenderer extends EntityRenderer<GroundworksBulldozerEntity
     public BulldozerRenderer(EntityRendererProvider.Context context) {
         super(context);
         this.model = new BulldozerModel(context.bakeLayer(GroundworksBulldozerClient.BULLDOZER_LAYER));
+        this.spoil = SpoilHeapModel.standard();
         this.shadowRadius = 1.8F;
     }
 
@@ -126,6 +129,18 @@ public class BulldozerRenderer extends EntityRenderer<GroundworksBulldozerEntity
                 OverlayTexture.NO_OVERLAY,
                 state.outlineColor
         );
+        if (state.carriedUnits > 0) {
+            this.spoil.setupAnim(state);
+            collector.submitModel(
+                    this.spoil,
+                    state,
+                    stack,
+                    RenderTypes.entityCutout(SpoilHeapModel.texture(state.carriedMaterialId)),
+                    state.lightCoords,
+                    OverlayTexture.NO_OVERLAY,
+                    state.outlineColor
+            );
+        }
 
         stack.popPose();
     }

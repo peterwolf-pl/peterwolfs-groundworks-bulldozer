@@ -186,32 +186,26 @@ public class TestGranularTerrain implements IGranularTerrainAccess {
     public int deposit(BlockPos pos, GranularMaterial material, int units) {
         if (units <= 0 || material == null || material.id() == 0) return 0;
 
-        int remaining = units;
-        int totalAdded = 0;
-        BlockPos current = pos;
+        // One cell. The live Groundworks deposit walks upward when full and
+        // solidifies each full cell; mirroring that walk here hid the pillar bug.
+        GranularCell cell = cells.computeIfAbsent(pos.immutable(), p -> {
+            GranularCell c = GranularCell.empty();
+            c.setMaterialId(material.id());
+            return c;
+        });
 
-        for (int attempt = 0; attempt < 8 && remaining > 0; attempt++) {
-            GranularCell cell = cells.computeIfAbsent(current.immutable(), p -> {
-                GranularCell c = GranularCell.empty();
-                c.setMaterialId(material.id());
-                return c;
-            });
-
-            if (cell.isEmpty()) {
-                cell.setMaterialId(material.id());
-            }
-
-            if (cell.materialId() == material.id()) {
-                int added = cell.addFromBottom(remaining);
-                totalAdded += added;
-                remaining -= added;
-            }
-
-            if (remaining > 0) {
-                current = current.above();
-            }
+        if (cell.isEmpty()) {
+            cell.setMaterialId(material.id());
         }
-        return totalAdded;
+        if (cell.materialId() != material.id()) {
+            return 0;
+        }
+        return cell.addFromBottom(units);
+    }
+
+    @Override
+    public int depositInCell(BlockPos pos, GranularMaterial material, int units) {
+        return deposit(pos, material, units);
     }
 
     @Override

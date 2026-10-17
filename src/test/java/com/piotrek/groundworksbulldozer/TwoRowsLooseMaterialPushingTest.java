@@ -154,11 +154,11 @@ class TwoRowsLooseMaterialPushingTest {
             assertNull(terrain.getCell(new BlockPos(x, 64, 3)), "Row 2 must be cleared");
         }
 
-        // Live rolling surcharge is retained in the blade
+        // Live rolling surcharge is retained in the blade. Overflow that does not
+        // fit in a flat cell ahead stays on the blade instead of stacking a pillar.
         assertTrue(carriedUnits >= 500, "Blade must retain live surcharge (was " + carriedUnits + ")");
-        // And the heap of material is actively pushed in the world in front of the blade
         int worldUnitsAfter = terrain.countTotalWorldUnits();
-        assertTrue(worldUnitsAfter > 3000, "Major heap of material must be pushed into the world (was " + worldUnitsAfter + ")");
+        assertTrue(worldUnitsAfter > 1000, "Overflow must still form a heap ahead of the blade (was " + worldUnitsAfter + ")");
         assertEquals(initialWorldUnits, worldUnitsAfter + carriedUnits,
                 "Total system volume must strictly equal initial volume");
     }

@@ -1,0 +1,5 @@
+/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/CHANGELOG.md
+/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/README.md
+/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/graphify-out/memory/query_20261008_024545_e29f1dfc_why_does_bladetransform_connect_blade_kinematics_t.md
+/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png
+/Users/piotrek/Documents/java/peterwolfs-groundworks-bulldozer/src/main/resources/assets/pw_groundworks_bulldozer/textures/item/heavy_bulldozer.png

@@ -81,6 +81,15 @@ public class GroundworksBulldozerAdapter implements IGranularTerrainAccess {
     }
 
     @Override
+    public int depositInCell(BlockPos pos, GranularMaterial material, int units) {
+        if (units <= 0 || material == null || material.id() == 0) {
+            return 0;
+        }
+        // No upward walk. A full cell must not become the next storey of a wall.
+        return GroundworksApi.deposit(level, pos, material, units).unitsDeposited();
+    }
+
+    @Override
     public void markSimulate(BlockPos pos) {
         GroundworksApi.markForSimulation(level, pos);
     }

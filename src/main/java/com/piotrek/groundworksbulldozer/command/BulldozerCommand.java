@@ -36,6 +36,24 @@ public final class BulldozerCommand {
                                     }
                                     return 0;
                                 })
+                                .then(Commands.literal("heavy")
+                                        .executes(ctx -> {
+                                            CommandSourceStack source = ctx.getSource();
+                                            ServerPlayer player = source.getPlayerOrException();
+                                            com.piotrek.groundworksbulldozer.entity.HeavyBulldozerEntity dozer =
+                                                    GroundworksBulldozerMod.HEAVY_BULLDOZER.create(
+                                                            source.getLevel(), EntitySpawnReason.COMMAND
+                                                    );
+                                            if (dozer != null) {
+                                                dozer.snapTo(player.getX(), player.getY(), player.getZ(), player.getYRot(), 0.0F);
+                                                source.getLevel().addFreshEntity(dozer);
+                                                player.startRiding(dozer);
+                                                source.sendSuccess(() -> Component.literal("§a[Bulldozer] Spawned and boarded heavy triangular crawler bulldozer."), true);
+                                                return 1;
+                                            }
+                                            return 0;
+                                        })
+                                )
                         )
                         .then(Commands.literal("blade")
                                 .then(Commands.argument("height", FloatArgumentType.floatArg(-0.60F, 0.80F))

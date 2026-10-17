@@ -1,0 +1,434 @@
+{
+  "build.gradle": {
+    "mtime": 1791093299.2999,
+    "seen": 1791427009.533416,
+    "ast_hash": "0f53af64b6cafc791c17194999ef790f",
+    "semantic_hash": "0f53af64b6cafc791c17194999ef790f"
+  },
+  "generate_textures.py": {
+    "mtime": 1791093477.8905084,
+    "seen": 1791427009.533418,
+    "ast_hash": "bfe0420bbc27b8e69d4596c0ec7ded4e",
+    "semantic_hash": "bfe0420bbc27b8e69d4596c0ec7ded4e"
+  },
+  "gradlew": {
+    "mtime": 1791093288.4521024,
+    "seen": 1791427009.53342,
+    "ast_hash": "65578da0358a01f31a6a78dfcf47e2bf",
+    "semantic_hash": "65578da0358a01f31a6a78dfcf47e2bf"
+  },
+  "settings.gradle": {
+    "mtime": 1791093291.6237557,
+    "seen": 1791427009.53342,
+    "ast_hash": "dc59a1c47902279e8e27c47c3c58a83c",
+    "semantic_hash": "dc59a1c47902279e8e27c47c3c58a83c"
+  },
+  "src/client/java/com/piotrek/groundworksbulldozer/client/GroundworksBulldozerClient.java": {
+    "mtime": 1791487662.3736527,
+    "seen": 1791487743.414787,
+    "ast_hash": "51109577c53e513216bf66aa2063d146",
+    "semantic_hash": ""
+  },
+  "src/client/java/com/piotrek/groundworksbulldozer/client/input/BulldozerInputHandler.java": {
+    "mtime": 1791095182.6219263,
+    "seen": 1791427009.533421,
+    "ast_hash": "f25a3e4a2549a3eb4b3ddd7737b1f578",
+    "semantic_hash": "f25a3e4a2549a3eb4b3ddd7737b1f578"
+  },
+  "src/client/java/com/piotrek/groundworksbulldozer/client/input/BulldozerKeyBindings.java": {
+    "mtime": 1791093454.9524174,
+    "seen": 1791427009.533422,
+    "ast_hash": "a554b9a00165b7390158411302aa38d2",
+    "semantic_hash": "a554b9a00165b7390158411302aa38d2"
+  },
+  "src/client/java/com/piotrek/groundworksbulldozer/client/model/BulldozerModel.java": {
+    "mtime": 1791514713.7987323,
+    "seen": 1791514770.656178,
+    "ast_hash": "c88e2fb2b8a83d8df12ffe626fbd8de0",
+    "semantic_hash": ""
+  },
+  "src/client/java/com/piotrek/groundworksbulldozer/client/render/BulldozerHudOverlay.java": {
+    "mtime": 1791509447.8387694,
+    "seen": 1791514770.65618,
+    "ast_hash": "e2b9979f453cb5514bb2666f6babe153",
+    "semantic_hash": ""
+  },
+  "src/client/java/com/piotrek/groundworksbulldozer/client/render/BulldozerRenderState.java": {
+    "mtime": 1791354889.628718,
+    "seen": 1791427009.5334241,
+    "ast_hash": "dd79c6da9a29fe343c404c18f3b3bda8",
+    "semantic_hash": "dd79c6da9a29fe343c404c18f3b3bda8"
+  },
+  "src/client/java/com/piotrek/groundworksbulldozer/client/render/BulldozerRenderer.java": {
+    "mtime": 1791514727.0045555,
+    "seen": 1791514770.656182,
+    "ast_hash": "ae8fa554e43c822c24c678310cc0b4fb",
+    "semantic_hash": ""
+  },
+  "src/client/java/com/piotrek/groundworksbulldozer/client/sound/BulldozerEngineSoundController.java": {
+    "mtime": 1791492535.1340446,
+    "seen": 1791492580.495164,
+    "ast_hash": "80cb105b4b80788799594927bfa17b50",
+    "semantic_hash": ""
+  },
+  "src/gametest/java/com/piotrek/groundworksbulldozer/gametest/BulldozerGroundworksGameTest.java": {
+    "mtime": 1791337401.3211243,
+    "seen": 1791427009.5334249,
+    "ast_hash": "c430cc5cbfc0d49cfae03332f5d6363a",
+    "semantic_hash": "c430cc5cbfc0d49cfae03332f5d6363a"
+  },
+  "src/gametest/java/com/piotrek/groundworksbulldozer/gametest/BulldozerVisualGameTest.java": {
+    "mtime": 1791094706.9719195,
+    "seen": 1791427009.5334258,
+    "ast_hash": "b77603d38b20c7db448d41756e1956b5",
+    "semantic_hash": "b77603d38b20c7db448d41756e1956b5"
+  },
+  "src/gametest/resources/fabric.mod.json": {
+    "mtime": 1791185181.2593138,
+    "seen": 1791427009.5334258,
+    "ast_hash": "76bc20571918041a47feadea12d9b037",
+    "semantic_hash": "76bc20571918041a47feadea12d9b037"
+  },
+  "src/main/java/com/piotrek/groundworksbulldozer/GroundworksBulldozerMod.java": {
+    "mtime": 1791493260.1213672,
+    "seen": 1791493562.023232,
+    "ast_hash": "ba948e751eabe5b72cc478389ef440e8",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/piotrek/groundworksbulldozer/blade/BladeTransform.java": {
+    "mtime": 1791505978.910208,
+    "seen": 1791506030.618033,
+    "ast_hash": "4d8056c28c944e04882a7d1511bbb5e5",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/piotrek/groundworksbulldozer/blade/BulldozerBladeController.java": {
+    "mtime": 1791500911.184977,
+    "seen": 1791504559.580891,
+    "ast_hash": "0b45a65d87762f618c3e8606f493705f",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/piotrek/groundworksbulldozer/command/BulldozerCommand.java": {
+    "mtime": 1791487584.054738,
+    "seen": 1791487743.4147992,
+    "ast_hash": "74e873c9c10b823b3dc156484e2e57b8",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/piotrek/groundworksbulldozer/entity/BulldozerState.java": {
+    "mtime": 1791093627.4977396,
+    "seen": 1791427009.533429,
+    "ast_hash": "3e2a23d4fe01497fa7d8f0ec783f0067",
+    "semantic_hash": "3e2a23d4fe01497fa7d8f0ec783f0067"
+  },
+  "src/main/java/com/piotrek/groundworksbulldozer/entity/GroundworksBulldozerEntity.java": {
+    "mtime": 1791514596.951986,
+    "seen": 1791514770.656192,
+    "ast_hash": "d1380c83608dac8f38ca384ce2b7a6a5",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/piotrek/groundworksbulldozer/integration/groundworks/GroundworksBulldozerAdapter.java": {
+    "mtime": 1791337401.3526745,
+    "seen": 1791427009.53343,
+    "ast_hash": "115d40d66e1fab0d8726888071541961",
+    "semantic_hash": "115d40d66e1fab0d8726888071541961"
+  },
+  "src/main/java/com/piotrek/groundworksbulldozer/integration/groundworks/IGranularTerrainAccess.java": {
+    "mtime": 1791337401.3633482,
+    "seen": 1791427009.533431,
+    "ast_hash": "4a4ee0327b93ea000cc031bbaec587dd",
+    "semantic_hash": "4a4ee0327b93ea000cc031bbaec587dd"
+  },
+  "src/main/java/com/piotrek/groundworksbulldozer/item/BulldozerItem.java": {
+    "mtime": 1791093439.306527,
+    "seen": 1791427009.533431,
+    "ast_hash": "bf426821982eef207c023e3130530e4c",
+    "semantic_hash": "bf426821982eef207c023e3130530e4c"
+  },
+  "src/main/java/com/piotrek/groundworksbulldozer/network/BulldozerInputPayload.java": {
+    "mtime": 1791093775.3718524,
+    "seen": 1791427009.533432,
+    "ast_hash": "68bf4de082dd940bdc24118fe8768cff",
+    "semantic_hash": "68bf4de082dd940bdc24118fe8768cff"
+  },
+  "src/main/java/com/piotrek/groundworksbulldozer/vehicle/BulldozerTrackController.java": {
+    "mtime": 1791514482.876211,
+    "seen": 1791514770.656197,
+    "ast_hash": "457109f816de5944a3e7d065399f68d8",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/piotrek/groundworksbulldozer/vehicle/EngineSoundProfile.java": {
+    "mtime": 1791356881.896388,
+    "seen": 1791427009.5334332,
+    "ast_hash": "090d448f86a9729ff67acdbdc14668e0",
+    "semantic_hash": "090d448f86a9729ff67acdbdc14668e0"
+  },
+  "src/main/resources/assets/pw_groundworks_bulldozer/items/bulldozer.json": {
+    "mtime": 1791093487.2021837,
+    "seen": 1791427009.5334332,
+    "ast_hash": "826f00af5a45cdcacf308c5a2264a586",
+    "semantic_hash": "826f00af5a45cdcacf308c5a2264a586"
+  },
+  "src/main/resources/assets/pw_groundworks_bulldozer/lang/en_us.json": {
+    "mtime": 1791504539.4554517,
+    "seen": 1791504559.5809019,
+    "ast_hash": "0b580e70588413b5344d88b23afb4ab0",
+    "semantic_hash": ""
+  },
+  "src/main/resources/assets/pw_groundworks_bulldozer/lang/pl_pl.json": {
+    "mtime": 1791504539.455501,
+    "seen": 1791504559.5809019,
+    "ast_hash": "89e3c690d08f76724ea11c507e672c71",
+    "semantic_hash": ""
+  },
+  "src/main/resources/assets/pw_groundworks_bulldozer/models/item/bulldozer.json": {
+    "mtime": 1791093484.3369825,
+    "seen": 1791427009.5334349,
+    "ast_hash": "1531675bfc61b4fe641878a4c9ec1dc4",
+    "semantic_hash": "1531675bfc61b4fe641878a4c9ec1dc4"
+  },
+  "src/main/resources/assets/pw_groundworks_bulldozer/sounds.json": {
+    "mtime": 1791492458.6430163,
+    "seen": 1791492580.495183,
+    "ast_hash": "ccefb144ea9137e75dc19d92a3a89ae6",
+    "semantic_hash": ""
+  },
+  "src/main/resources/fabric.mod.json": {
+    "mtime": 1791490770.4231164,
+    "seen": 1791490807.395224,
+    "ast_hash": "a9e133df0ec0f1fa5a60741539bc6394",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/piotrek/groundworksbulldozer/AcceptanceGradingTest.java": {
+    "mtime": 1791093664.1629755,
+    "seen": 1791427009.5334358,
+    "ast_hash": "2b45ef0db6595f67b89798dcfc7359bc",
+    "semantic_hash": "2b45ef0db6595f67b89798dcfc7359bc"
+  },
+  "src/test/java/com/piotrek/groundworksbulldozer/BladeDownRemovesAndPushesMaterialTest.java": {
+    "mtime": 1791337401.3929892,
+    "seen": 1791427009.533437,
+    "ast_hash": "c96883ff5b28b430792dace58604abae",
+    "semantic_hash": "c96883ff5b28b430792dace58604abae"
+  },
+  "src/test/java/com/piotrek/groundworksbulldozer/BladeSaveLoadTest.java": {
+    "mtime": 1791093636.4076478,
+    "seen": 1791427009.533437,
+    "ast_hash": "66aedaa8d9192a27acabb0753bbcf87b",
+    "semantic_hash": "66aedaa8d9192a27acabb0753bbcf87b"
+  },
+  "src/test/java/com/piotrek/groundworksbulldozer/BladeTransformKinematicsTest.java": {
+    "mtime": 1791505929.9754982,
+    "seen": 1791506030.618051,
+    "ast_hash": "856c9f34529625bba63d518d64fdfeaf",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/piotrek/groundworksbulldozer/BladeUpNoTerrainModificationTest.java": {
+    "mtime": 1791093589.8767674,
+    "seen": 1791427009.533438,
+    "ast_hash": "d2091f16a7b4e0bdb57a22de227c89c6",
+    "semantic_hash": "d2091f16a7b4e0bdb57a22de227c89c6"
+  },
+  "src/test/java/com/piotrek/groundworksbulldozer/ChunkBoundaryPushingTest.java": {
+    "mtime": 1791093607.8335764,
+    "seen": 1791427009.533439,
+    "ast_hash": "f2c0b5b3039b60fe0b09855c4b0fc141",
+    "semantic_hash": "f2c0b5b3039b60fe0b09855c4b0fc141"
+  },
+  "src/test/java/com/piotrek/groundworksbulldozer/DifferentialSteeringTest.java": {
+    "mtime": 1791093745.7453473,
+    "seen": 1791427009.533439,
+    "ast_hash": "965e7adaabbd898b0783ac2b38155c36",
+    "semantic_hash": "965e7adaabbd898b0783ac2b38155c36"
+  },
+  "src/test/java/com/piotrek/groundworksbulldozer/EngineSoundProfileTest.java": {
+    "mtime": 1791179717.3321533,
+    "seen": 1791427009.53344,
+    "ast_hash": "633366c23d7e1d0d0fa3944ce85913fd",
+    "semantic_hash": "633366c23d7e1d0d0fa3944ce85913fd"
+  },
+  "src/test/java/com/piotrek/groundworksbulldozer/GradingDepressionFillTest.java": {
+    "mtime": 1791493344.8541603,
+    "seen": 1791493562.023254,
+    "ast_hash": "9415b93b8125f361d5763d46fe7e0aae",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/piotrek/groundworksbulldozer/MultiplayerSynchronizationTest.java": {
+    "mtime": 1791093687.398774,
+    "seen": 1791427009.533441,
+    "ast_hash": "5b305b2392cb85782205bb0d73332fab",
+    "semantic_hash": "5b305b2392cb85782205bb0d73332fab"
+  },
+  "src/test/java/com/piotrek/groundworksbulldozer/ReversingHeapDepositTest.java": {
+    "mtime": 1791179717.3323061,
+    "seen": 1791427009.533442,
+    "ast_hash": "1e37708f700df54622b94667145450bc",
+    "semantic_hash": "1e37708f700df54622b94667145450bc"
+  },
+  "src/test/java/com/piotrek/groundworksbulldozer/TestGranularTerrain.java": {
+    "mtime": 1791500801.9035738,
+    "seen": 1791504559.580915,
+    "ast_hash": "b7813da144fb655a7ca5644232b320ed",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/piotrek/groundworksbulldozer/TwoRowsLooseMaterialPushingTest.java": {
+    "mtime": 1791500969.701972,
+    "seen": 1791504559.580915,
+    "ast_hash": "d49fa679adcc2c5929acbcc86b5a3add",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/piotrek/groundworksbulldozer/VolumeConservationTest.java": {
+    "mtime": 1791185181.2610128,
+    "seen": 1791427009.533443,
+    "ast_hash": "18bd51830eadfba5ff36fac9838b483c",
+    "semantic_hash": "18bd51830eadfba5ff36fac9838b483c"
+  },
+  "README.md": {
+    "mtime": 1791490951.1237757,
+    "seen": 1791490982.417619,
+    "ast_hash": "29980242a9a59ecdc97fdc7d43b5a034",
+    "semantic_hash": ""
+  },
+  "src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/bulldozer.png": {
+    "mtime": 1791093480.3721197,
+    "seen": 1791427009.5334442,
+    "ast_hash": "bf5cbbeb80eaaf2dc23100161177c5fe",
+    "semantic_hash": "bf5cbbeb80eaaf2dc23100161177c5fe"
+  },
+  "src/main/resources/assets/pw_groundworks_bulldozer/textures/item/bulldozer.png": {
+    "mtime": 1791093480.3724422,
+    "seen": 1791427009.5334451,
+    "ast_hash": "dbc70cefffd3b123b86d2c419de79d2a",
+    "semantic_hash": "dbc70cefffd3b123b86d2c419de79d2a"
+  },
+  "src/main/resources/assets/pw_groundworks_bulldozer/sounds/engine_load.ogg": {
+    "mtime": 1791356881.897172,
+    "seen": 1791427009.5334451,
+    "ast_hash": "d49f0e9e973cb9c027a7dfa30ba9cdd6",
+    "semantic_hash": "d49f0e9e973cb9c027a7dfa30ba9cdd6"
+  },
+  "src/main/resources/assets/pw_groundworks_bulldozer/sounds/engine_loop.ogg": {
+    "mtime": 1791356881.8976812,
+    "seen": 1791427009.5334458,
+    "ast_hash": "40a25d487200232dd9084b74dae83fe1",
+    "semantic_hash": "40a25d487200232dd9084b74dae83fe1"
+  },
+  "generate_heavy_textures.py": {
+    "mtime": 1791490754.4886367,
+    "seen": 1791490807.39519,
+    "ast_hash": "44bd97308f86adf98258948fdad6f03f",
+    "semantic_hash": ""
+  },
+  "src/client/java/com/piotrek/groundworksbulldozer/client/model/HeavyBulldozerModel.java": {
+    "mtime": 1791525293.617709,
+    "seen": 1791525381.2652512,
+    "ast_hash": "d9880bca8cae83b503b8ca885d902734",
+    "semantic_hash": ""
+  },
+  "src/client/java/com/piotrek/groundworksbulldozer/client/render/HeavyBulldozerRenderState.java": {
+    "mtime": 1791493163.0615354,
+    "seen": 1791493562.023228,
+    "ast_hash": "53cfec607dd87116329bd85bc09d3074",
+    "semantic_hash": ""
+  },
+  "src/client/java/com/piotrek/groundworksbulldozer/client/render/HeavyBulldozerRenderer.java": {
+    "mtime": 1791514727.0045395,
+    "seen": 1791514770.656184,
+    "ast_hash": "fa065a5dac996e8fdb299656031a2459",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/piotrek/groundworksbulldozer/entity/HeavyBulldozerEntity.java": {
+    "mtime": 1791498874.8073893,
+    "seen": 1791498960.0024068,
+    "ast_hash": "8f9ec344eb10f808ff81e5f992c8e558",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/piotrek/groundworksbulldozer/item/HeavyBulldozerItem.java": {
+    "mtime": 1791487567.979022,
+    "seen": 1791487743.414804,
+    "ast_hash": "1bf54aa5af15d9f7688ab0846587b6a2",
+    "semantic_hash": ""
+  },
+  "src/main/resources/assets/pw_groundworks_bulldozer/items/heavy_bulldozer.json": {
+    "mtime": 1791487481.9885025,
+    "seen": 1791487743.414808,
+    "ast_hash": "7a61bbab8df0d5b2ffd96d82dd357959",
+    "semantic_hash": ""
+  },
+  "src/main/resources/assets/pw_groundworks_bulldozer/models/item/heavy_bulldozer.json": {
+    "mtime": 1791487484.4988012,
+    "seen": 1791487743.414811,
+    "ast_hash": "2c3ce6874b81cb782e05c8eaa28ec182",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/piotrek/groundworksbulldozer/HeavyBulldozerGradingAndKinematicsTest.java": {
+    "mtime": 1791500830.7511802,
+    "seen": 1791504559.5809128,
+    "ast_hash": "a5c77d7a96b712cf871cba4f4c45bb00",
+    "semantic_hash": ""
+  },
+  "graphify-out/memory/query_20261008_024545_e29f1dfc_why_does_bladetransform_connect_blade_kinematics_t.md": {
+    "mtime": 1791427545.4852226,
+    "seen": 1791487743.414825,
+    "ast_hash": "2b7279ffe660ab86d0296a0675e93b7d",
+    "semantic_hash": ""
+  },
+  "src/main/resources/assets/pw_groundworks_bulldozer/textures/entity/heavy_bulldozer.png": {
+    "mtime": 1791490757.7138004,
+    "seen": 1791490807.395238,
+    "ast_hash": "ad38d4a356d5be3e80beea9ce343b6df",
+    "semantic_hash": ""
+  },
+  "src/main/resources/assets/pw_groundworks_bulldozer/textures/item/heavy_bulldozer.png": {
+    "mtime": 1791490757.7140899,
+    "seen": 1791490807.3952398,
+    "ast_hash": "f40200f49ecbcfcb3414e7ce24231762",
+    "semantic_hash": ""
+  },
+  "CHANGELOG.md": {
+    "mtime": 1791493523.4988592,
+    "seen": 1791493562.023259,
+    "ast_hash": "8113288bf8589cb75388a246d7b625e5",
+    "semantic_hash": ""
+  },
+  "src/main/resources/assets/pw_groundworks_bulldozer/sounds/heavy_engine_load.ogg": {
+    "mtime": 1791492445.3586383,
+    "seen": 1791492580.495203,
+    "ast_hash": "ce8b695bb9d3e045bbeac22a8aac9bfc",
+    "semantic_hash": ""
+  },
+  "src/main/resources/assets/pw_groundworks_bulldozer/sounds/heavy_engine_loop.ogg": {
+    "mtime": 1791492445.3577936,
+    "seen": 1791492580.4952042,
+    "ast_hash": "289ad4c3778b934f4f0fffc7dba2d006",
+    "semantic_hash": ""
+  },
+  "src/client/java/com/piotrek/groundworksbulldozer/client/model/SpoilHeapModel.java": {
+    "mtime": 1791514713.8109212,
+    "seen": 1791514770.65618,
+    "ast_hash": "e3be1f39be11d30ba244c9225c287f07",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/piotrek/groundworksbulldozer/vehicle/GradeDatum.java": {
+    "mtime": 1791509427.3809683,
+    "seen": 1791514770.656199,
+    "ast_hash": "2cff4d9caaeb9e57383781defaec45ad",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/piotrek/groundworksbulldozer/vehicle/GradePass.java": {
+    "mtime": 1791514482.8654225,
+    "seen": 1791514770.6562,
+    "ast_hash": "41729c5fc451595459801d29e1168f73",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/piotrek/groundworksbulldozer/GradeDatumTest.java": {
+    "mtime": 1791509427.381203,
+    "seen": 1791514770.656213,
+    "ast_hash": "02ab32d7f25fef666d6db15fce3ebded",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/piotrek/groundworksbulldozer/GradePassTest.java": {
+    "mtime": 1791514482.875715,
+    "seen": 1791514770.656214,
+    "ast_hash": "b8a9a50029feb6aa9730e14acd5ea2b3",
+    "semantic_hash": ""
+  }
+}
